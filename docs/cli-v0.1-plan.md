@@ -60,6 +60,18 @@ Output:
 
 Checks for semantic and modeling issues beyond syntax.
 
+Severity model:
+
+- `error`: contradictory or structurally dangerous modeling
+- `warning`: likely modeling problems that should usually be fixed
+- `info`: useful guidance that does not fail the lint command by itself
+
+Output model:
+
+- deterministic finding order
+- one summary line with counts by severity
+- one stable line per finding using severity, code, line, and message
+
 Initial lint rules:
 
 - duplicate state names
@@ -70,7 +82,9 @@ Initial lint rules:
 - duplicate top-level names in the same file
 - missing process trigger
 - multiple process triggers
+- late process trigger after operational statements
 - unreachable statements after guaranteed `stop`
+- rule without `applies to`
 - conflicting role permissions
 
 ## Suggested package structure

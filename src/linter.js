@@ -1,49 +1,112 @@
+const SEVERITY = {
+  error: "error",
+  warning: "warning",
+  info: "info",
+};
+
+const SEVERITY_RANK = {
+  error: 0,
+  warning: 1,
+  info: 2,
+};
+
+const RULES = {
+  "process-missing-trigger": { severity: SEVERITY.warning },
+  "process-multiple-triggers": { severity: SEVERITY.error },
+  "process-trigger-order": { severity: SEVERITY.info },
+  "rule-missing-scope": { severity: SEVERITY.info },
+  "state-orphaned": { severity: SEVERITY.warning },
+  "state-no-incoming": { severity: SEVERITY.info },
+  "role-conflicting-permission": { severity: SEVERITY.error },
+  "unreachable-statement": { severity: SEVERITY.warning },
+};
+
 function lintDocument(ast) {
-  const issues = [];
+  const findings = [];
 
   for (const node of ast.body) {
-    lintNode(node, issues);
+    lintNode(node, findings);
   }
 
-  return issues;
+  return sortFindings(findings);
 }
 
-function lintNode(node, issues) {
+function summarizeFindings(findings) {
+  const summary = {
+    error: 0,
+    warning: 0,
+    info: 0,
+  };
+
+  for (const finding of findings) {
+    summary[finding.severity] += 1;
+  }
+
+  return summary;
+}
+
+function renderLintReport(filePath, findings) {
+  if (findings.length === 0) {
+    return [`No lint findings: ${filePath}`];
+  }
+
+  const summary = summarizeFindings(findings);
+  const lines = [
+    `Lint findings: ${filePath}`,
+    `  summary: ${summary.error} error(s), ${summary.warning} warning(s), ${summary.info} info finding(s)`,
+  ];
+
+  for (const finding of findings) {
+    lines.push(
+      `  ${finding.severity.toUpperCase()} ${finding.code} line ${finding.line}: ${finding.message}`
+    );
+  }
+
+  return lines;
+}
+
+function lintNode(node, findings) {
   if (node.type === "ProcessNode") {
-    lintProcess(node, issues);
+    lintProcess(node, findings);
     return;
   }
 
-  if (node.type === "RuleNode" || node.type === "EventNode") {
-    lintStatementBlock(node.body || [], issues);
+  if (node.type === "RuleNode") {
+    lintRule(node, findings);
+    lintStatementBlock(node.body || [], findings);
+    return;
+  }
+
+  if (node.type === "EventNode") {
+    lintStatementBlock(node.body || [], findings);
     return;
   }
 
   if (node.type === "StateflowNode") {
-    lintStateflow(node, issues);
+    lintStateflow(node, findings);
     return;
   }
 
   if (node.type === "RoleNode") {
-    lintRole(node, issues);
+    lintRole(node, findings);
     return;
   }
 
   if (node.type === "PolicyNode") {
     for (const clause of node.clauses || []) {
-      lintActionBlock(clause.body || [], issues);
+      lintActionBlock(clause.body || [], findings);
     }
   }
 }
 
-function lintProcess(node, issues) {
-  const triggers = (node.body || []).filter((statement) => statement.type === "WhenNode");
+function lintProcess(node, findings) {
+  const body = node.body || [];
+  const triggers = body.filter((statement) => statement.type === "WhenNode");
 
   if (triggers.length === 0) {
-    issues.push(
+    findings.push(
       createLintIssue(
         "process-missing-trigger",
-        "warning",
         1,
         `Process \`${node.name}\` has no \`when\` trigger.`
       )
@@ -51,20 +114,46 @@ function lintProcess(node, issues) {
   }
 
   if (triggers.length > 1) {
-    issues.push(
+    findings.push(
       createLintIssue(
         "process-multiple-triggers",
-        "warning",
         triggers[1].line,
         `Process \`${node.name}\` declares multiple \`when\` triggers.`
       )
     );
   }
 
-  lintStatementBlock(node.body || [], issues);
+  const firstNonTriggerIndex = body.findIndex((statement) => statement.type !== "WhenNode");
+  if (firstNonTriggerIndex >= 0) {
+    for (let index = firstNonTriggerIndex + 1; index < body.length; index += 1) {
+      if (body[index].type === "WhenNode") {
+        findings.push(
+          createLintIssue(
+            "process-trigger-order",
+            body[index].line,
+            `Process \`${node.name}\` declares a \`when\` trigger after operational statements.`
+          )
+        );
+      }
+    }
+  }
+
+  lintStatementBlock(body, findings);
 }
 
-function lintStateflow(node, issues) {
+function lintRule(node, findings) {
+  if (!node.appliesTo) {
+    findings.push(
+      createLintIssue(
+        "rule-missing-scope",
+        1,
+        `Rule \`${node.name}\` does not declare an \`applies to\` scope.`
+      )
+    );
+  }
+}
+
+function lintStateflow(node, findings) {
   const incoming = new Map();
   const outgoing = new Map();
   const states = node.states || [];
@@ -89,10 +178,9 @@ function lintStateflow(node, issues) {
     const outCount = outgoing.get(state.value) || 0;
 
     if (inCount === 0 && outCount === 0) {
-      issues.push(
+      findings.push(
         createLintIssue(
           "state-orphaned",
-          "warning",
           state.line,
           `State \`${state.value}\` in stateflow \`${node.name}\` has no incoming or outgoing transitions.`
         )
@@ -101,10 +189,9 @@ function lintStateflow(node, issues) {
     }
 
     if (index > 0 && inCount === 0) {
-      issues.push(
+      findings.push(
         createLintIssue(
           "state-no-incoming",
-          "warning",
           state.line,
           `State \`${state.value}\` in stateflow \`${node.name}\` has no incoming transitions.`
         )
@@ -113,15 +200,14 @@ function lintStateflow(node, issues) {
   });
 }
 
-function lintRole(node, issues) {
+function lintRole(node, findings) {
   const can = new Set((node.can || []).map((permission) => permission.value));
 
   for (const permission of node.cannot || []) {
     if (can.has(permission.value)) {
-      issues.push(
+      findings.push(
         createLintIssue(
           "role-conflicting-permission",
-          "warning",
           permission.line,
           `Role \`${node.name}\` declares \`${permission.value}\` in both \`can\` and \`cannot\`.`
         )
@@ -130,15 +216,14 @@ function lintRole(node, issues) {
   }
 }
 
-function lintStatementBlock(statements, issues) {
+function lintStatementBlock(statements, findings) {
   let terminated = false;
 
   for (const statement of statements) {
     if (terminated) {
-      issues.push(
+      findings.push(
         createLintIssue(
           "unreachable-statement",
-          "warning",
           statement.line || 1,
           "This statement is unreachable because the previous branch always stops."
         )
@@ -146,14 +231,14 @@ function lintStatementBlock(statements, issues) {
     }
 
     if (statement.type === "IfNode") {
-      lintStatementBlock(statement.then || [], issues);
+      lintStatementBlock(statement.then || [], findings);
 
       for (const branch of statement.elseIf || []) {
-        lintStatementBlock(branch.then || [], issues);
+        lintStatementBlock(branch.then || [], findings);
       }
 
       if (statement.else) {
-        lintStatementBlock(statement.else.body || [], issues);
+        lintStatementBlock(statement.else.body || [], findings);
       }
     }
 
@@ -161,15 +246,14 @@ function lintStatementBlock(statements, issues) {
   }
 }
 
-function lintActionBlock(statements, issues) {
+function lintActionBlock(statements, findings) {
   let terminated = false;
 
   for (const statement of statements) {
     if (terminated) {
-      issues.push(
+      findings.push(
         createLintIssue(
           "unreachable-statement",
-          "warning",
           statement.line || 1,
           "This statement is unreachable because the previous branch always stops."
         )
@@ -208,15 +292,33 @@ function blockAlwaysStops(statements) {
   return statementAlwaysStops(statements[statements.length - 1]);
 }
 
-function createLintIssue(code, severity, line, message) {
+function sortFindings(findings) {
+  return [...findings].sort((left, right) => {
+    if (left.line !== right.line) {
+      return left.line - right.line;
+    }
+
+    if (SEVERITY_RANK[left.severity] !== SEVERITY_RANK[right.severity]) {
+      return SEVERITY_RANK[left.severity] - SEVERITY_RANK[right.severity];
+    }
+
+    return left.code.localeCompare(right.code);
+  });
+}
+
+function createLintIssue(code, line, message) {
   return {
     code,
-    severity,
+    severity: RULES[code].severity,
     line,
     message,
   };
 }
 
 module.exports = {
+  RULES,
+  SEVERITY,
   lintDocument,
+  renderLintReport,
+  summarizeFindings,
 };

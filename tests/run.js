@@ -6,6 +6,7 @@ const path = require("path");
 const { formatDocument } = require("../src/formatter");
 const { buildModel } = require("../src/validate");
 const { toCanonicalModel } = require("../src/export-json");
+const { lintDocument, renderLintReport, summarizeFindings } = require("../src/linter");
 
 const repoRoot = path.resolve(__dirname, "..");
 const examplesDir = path.join(repoRoot, "examples");
@@ -14,8 +15,6 @@ const invalidDir = path.join(repoRoot, "tests", "invalid");
 const lintDir = path.join(repoRoot, "tests", "lint");
 const expectationsPath = path.join(invalidDir, "expectations.json");
 const lintExpectationsPath = path.join(lintDir, "expectations.json");
-const { lintDocument } = require("../src/linter");
-
 run();
 
 function run() {
@@ -142,6 +141,39 @@ function testLintFixtures() {
       assert.ok(
         codes.includes(expectedCode),
         `Expected lint code "${expectedCode}" in ${entry.file}`
+      );
+    }
+
+    if (entry.expectedSeverities) {
+      for (const [code, severity] of Object.entries(entry.expectedSeverities)) {
+        const finding = findings.find((item) => item.code === code);
+        assert.ok(finding, `Expected finding "${code}" in ${entry.file}`);
+        assert.strictEqual(
+          finding.severity,
+          severity,
+          `Expected severity "${severity}" for "${code}" in ${entry.file}`
+        );
+      }
+    }
+
+    const summary = summarizeFindings(findings);
+    const counted = findings.reduce(
+      (acc, finding) => {
+        acc[finding.severity] += 1;
+        return acc;
+      },
+      { error: 0, warning: 0, info: 0 }
+    );
+    assert.deepStrictEqual(summary, counted, `Unexpected lint summary for ${entry.file}`);
+
+    const reportLines = renderLintReport(entry.file, findings);
+    if (findings.length === 0) {
+      assert.strictEqual(reportLines.length, 1, `Expected single-line clean report for ${entry.file}`);
+    } else {
+      assert.strictEqual(
+        reportLines[1],
+        `  summary: ${summary.error} error(s), ${summary.warning} warning(s), ${summary.info} info finding(s)`,
+        `Unexpected lint summary line for ${entry.file}`
       );
     }
   }

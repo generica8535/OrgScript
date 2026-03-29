@@ -10,6 +10,8 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 - Added formatter stability tests to ensure canonical example files remain idempotent.
 - Added the first AST-backed linter via `orgscript lint <file>`.
 - Added lint fixtures for process triggers, unreachable statements, orphan states, and conflicting role permissions.
+- Formalized lint severities as `error`, `warning`, and `info`.
+- Stabilized lint output with deterministic ordering and a severity summary line.
 
 ## [0.2.0] - 2026-03-29
 

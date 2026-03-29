@@ -1,0 +1,4 @@
+rule MissingScope
+
+  if order.deposit_received = false then
+    require finance_review

@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { toCanonicalModel } = require("./export-json");
 const { formatDocument } = require("./formatter");
-const { lintDocument } = require("./linter");
+const { lintDocument, renderLintReport, summarizeFindings } = require("./linter");
 const { buildModel, validateFile } = require("./validate");
 
 function printUsage() {
@@ -97,17 +97,13 @@ function run(args) {
     const findings = lintDocument(result.ast);
 
     if (findings.length === 0) {
-      console.log(`No lint findings: ${absolutePath}`);
+      console.log(renderLintReport(absolutePath, findings).join("\n"));
       process.exit(0);
     }
 
-    console.error(`Lint findings: ${absolutePath}`);
-    for (const finding of findings) {
-      console.error(
-        `  line ${finding.line}: [${finding.severity}] (${finding.code}) ${finding.message}`
-      );
-    }
-    process.exit(1);
+    const summary = summarizeFindings(findings);
+    console.error(renderLintReport(absolutePath, findings).join("\n"));
+    process.exit(summary.error > 0 || summary.warning > 0 ? 1 : 0);
   }
 
   console.error(`Unknown command: ${command}`);
