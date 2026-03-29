@@ -20,6 +20,7 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 - Unified CLI diagnostics across `validate`, `lint`, `check`, and `format --check`.
 - Added stable diagnostic code namespaces for syntax, semantic validation, lint, format, and CLI usage errors.
 - Added `format --check --json` and documented JSON diagnostics with real examples.
+- Upgraded the VS Code OrgScript extension from a scaffold to a usable first TextMate-based syntax-highlighting integration.
 
 ## [0.3.0] - 2026-03-29
 

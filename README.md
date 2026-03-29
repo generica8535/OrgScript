@@ -183,7 +183,7 @@ npm run demo:generate
 - Golden snapshot tests for AST, canonical model, and formatter output
 - Stable lint severities: `error`, `warning`, `info`
 - Canonical master spec: [`spec/language-spec.md`](spec/language-spec.md)
-- Initial VS Code syntax-highlighting scaffold: [`editors/vscode`](editors/vscode)
+- Initial VS Code syntax-highlighting extension: [`editors/vscode`](editors/vscode)
 - Generated demo artifacts for Mermaid and Markdown summaries under [`docs/demos`](docs/demos)
 
 ## Quick start
@@ -362,13 +362,15 @@ OrgScript currently produces two human-facing output types from the same source 
 
 ## Editor support
 
-OrgScript now ships with a first VS Code syntax-highlighting scaffold under [`editors/vscode`](editors/vscode).
+OrgScript now ships with a first usable VS Code syntax-highlighting extension under [`editors/vscode`](editors/vscode).
 
 It currently covers:
 
 - `.orgs` file association
-- top-level blocks and core keywords
-- strings, numbers, and operators
+- top-level blocks and block names
+- core statements and section keywords
+- strings, booleans, numbers, and operators
+- dotted references such as `lead.status` and `lead.created`
 
 See [`editors/vscode/README.md`](editors/vscode/README.md) for local installation and usage notes.
 
