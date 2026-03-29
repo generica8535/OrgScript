@@ -15,6 +15,7 @@ Implemented:
 - `format --check`
 - `lint`
 - `export json`
+- `export markdown`
 - `export mermaid`
 - `validate --json`
 - `lint --json`
@@ -46,6 +47,27 @@ Output:
 ### `orgscript export json <file>`
 
 Exports the parsed document into the canonical JSON model.
+
+### `orgscript export markdown <file>`
+
+Exports the parsed document into a concise Markdown summary.
+
+Current scope:
+
+- `process`
+- `stateflow`
+- `rule`
+- `role`
+- `policy`
+- `event`
+- `metric`
+
+Output style:
+
+- human-readable
+- deterministic
+- structured for code review and docs
+- intentionally concise rather than prose-heavy
 
 ### `orgscript export mermaid <file>`
 
@@ -170,5 +192,6 @@ TypeScript is the fastest start:
 - Lint exit codes are safe for CI use with advisory warnings.
 - Invalid files produce useful errors with line references.
 - Valid files can be exported to canonical JSON.
+- Valid files can be exported to concise Markdown summaries.
 - Formatter output is deterministic.
 - Linter catches at least a handful of high-value modeling mistakes.

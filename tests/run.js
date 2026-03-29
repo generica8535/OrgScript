@@ -7,6 +7,7 @@ const path = require("path");
 const { formatDocument } = require("../src/formatter");
 const { buildModel } = require("../src/validate");
 const { toCanonicalModel } = require("../src/export-json");
+const { toMarkdownSummary } = require("../src/export-markdown");
 const { toMermaidMarkdown } = require("../src/export-mermaid");
 const { lintDocument, renderLintReport, summarizeFindings } = require("../src/linter");
 
@@ -28,6 +29,8 @@ function run() {
   testFormatCheckMode();
   testCheckCommand();
   testMermaidExport();
+  testMarkdownExport();
+  testMarkdownExporterAdditionalBlockKinds();
   console.log("All tests passed.");
 }
 
@@ -49,6 +52,7 @@ function testGoldenSnapshots() {
     const astPath = path.join(goldenDir, `${baseName}.ast.json`);
     const modelPath = path.join(goldenDir, `${baseName}.model.json`);
     const formattedPath = path.join(goldenDir, `${baseName}.formatted.orgs`);
+    const summaryPath = path.join(goldenDir, `${baseName}.summary.md`);
     const mermaidPath = path.join(goldenDir, `${baseName}.mermaid.md`);
 
     const actualAst = JSON.stringify(normalizeAst(result.ast), null, 2);
@@ -66,6 +70,16 @@ function testGoldenSnapshots() {
       expectedFormatted,
       `Formatted snapshot mismatch for ${file}`
     );
+
+    if (fs.existsSync(summaryPath)) {
+      const actualSummary = toMarkdownSummary(toCanonicalModel(result.ast));
+      const expectedSummary = fs.readFileSync(summaryPath, "utf8");
+      assert.strictEqual(
+        actualSummary,
+        expectedSummary,
+        `Markdown summary snapshot mismatch for ${file}`
+      );
+    }
 
     if (fs.existsSync(mermaidPath)) {
       const actualMermaid = toMermaidMarkdown(toCanonicalModel(result.ast));
@@ -299,6 +313,18 @@ function testCliDiagnosticsAndExitCodes() {
   const exportPayload = JSON.parse(exportJson.stdout);
   assert.strictEqual(exportPayload.type, "document");
 
+  const exportMarkdown = runCli([
+    cliPath,
+    "export",
+    "markdown",
+    "./examples/craft-business-lead-to-order.orgs",
+  ]);
+  assert.strictEqual(exportMarkdown.status, 0, "Expected export markdown to succeed");
+  assert.ok(
+    exportMarkdown.stdout.includes("# Process: CraftBusinessLeadToOrder"),
+    "Expected Markdown export heading"
+  );
+
   const exportMermaid = runCli([
     cliPath,
     "export",
@@ -508,6 +534,60 @@ function testMermaidExport() {
     unsupportedMermaid.stderr.includes("No Mermaid-exportable blocks found"),
     "Expected unsupported Mermaid export message"
   );
+}
+
+function testMarkdownExport() {
+  const cliPath = path.join(repoRoot, "bin", "orgscript.js");
+  const supportedFixtures = [
+    "craft-business-lead-to-order",
+    "lead-qualification",
+    "order-approval",
+    "service-escalation",
+  ];
+
+  for (const fixture of supportedFixtures) {
+    const exported = runCli([cliPath, "export", "markdown", `./examples/${fixture}.orgs`]);
+    assert.strictEqual(exported.status, 0, `Expected Markdown export to succeed for ${fixture}`);
+    const expected = fs.readFileSync(path.join(goldenDir, `${fixture}.summary.md`), "utf8");
+    assert.strictEqual(exported.stdout, expected, `Unexpected Markdown export for ${fixture}`);
+  }
+}
+
+function testMarkdownExporterAdditionalBlockKinds() {
+  const model = {
+    version: "0.2",
+    type: "document",
+    body: [
+      {
+        type: "event",
+        name: "OrderPaid",
+        body: [
+          {
+            type: "notify",
+            target: "finance",
+            message: "Payment received",
+          },
+          {
+            type: "create",
+            entity: "receipt",
+          },
+        ],
+      },
+      {
+        type: "metric",
+        name: "CloseRate",
+        formula: "won_quotes / total_quotes",
+        owner: "sales_management",
+        target: ">= 0.35",
+      },
+    ],
+  };
+
+  const output = toMarkdownSummary(model);
+  assert.ok(output.includes("# Event: OrderPaid"), "Expected event summary heading");
+  assert.ok(output.includes("notify `finance` with `\"Payment received\"`"), "Expected event action");
+  assert.ok(output.includes("# Metric: CloseRate"), "Expected metric summary heading");
+  assert.ok(output.includes("`won_quotes / total_quotes`"), "Expected metric formula");
 }
 
 function runCli(args) {

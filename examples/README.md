@@ -30,7 +30,10 @@ This folder shows OrgScript at three adoption levels.
 ```text
 node ./bin/orgscript.js validate ./examples/lead-qualification.orgs
 node ./bin/orgscript.js check ./examples/craft-business-lead-to-order.orgs
+node ./bin/orgscript.js export markdown ./examples/order-approval.orgs
 node ./bin/orgscript.js export mermaid ./examples/order-approval.orgs
 ```
 
 For generated Mermaid demo artifacts, see [`../docs/demos/mermaid/README.md`](../docs/demos/mermaid/README.md).
+
+For generated Markdown summary demo artifacts, see [`../docs/demos/markdown/README.md`](../docs/demos/markdown/README.md).

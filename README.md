@@ -71,16 +71,21 @@ process CraftBusinessLeadToOrder
 
 See the full example in [`examples/craft-business-lead-to-order.orgs`](examples/craft-business-lead-to-order.orgs).
 
-## From Source To Diagram
+## From Source To Output
 
 OrgScript already generates visible downstream artifacts.
 
-Minimal Mermaid demos live in [`docs/demos/mermaid/README.md`](docs/demos/mermaid/README.md):
+Mermaid demos live in [`docs/demos/mermaid/README.md`](docs/demos/mermaid/README.md):
 
 - process demo from [`examples/lead-qualification.orgs`](examples/lead-qualification.orgs) to [`docs/demos/mermaid/lead-qualification.mermaid.md`](docs/demos/mermaid/lead-qualification.mermaid.md)
 - stateflow demo from [`examples/order-approval.orgs`](examples/order-approval.orgs) to [`docs/demos/mermaid/order-approval.mermaid.md`](docs/demos/mermaid/order-approval.mermaid.md)
 
-Generate the demo artifacts with:
+Markdown summary demos live in [`docs/demos/markdown/README.md`](docs/demos/markdown/README.md):
+
+- process summary from [`examples/lead-qualification.orgs`](examples/lead-qualification.orgs) to [`docs/demos/markdown/lead-qualification.summary.md`](docs/demos/markdown/lead-qualification.summary.md)
+- mixed summary from [`examples/order-approval.orgs`](examples/order-approval.orgs) to [`docs/demos/markdown/order-approval.summary.md`](docs/demos/markdown/order-approval.summary.md)
+
+Generate both demo sets with:
 
 ```text
 npm run demo:generate
@@ -141,6 +146,7 @@ npm run demo:generate
 - [`docs/repository-structure.md`](docs/repository-structure.md)
 - [`docs/syntax.md`](docs/syntax.md)
 - [`docs/semantics.md`](docs/semantics.md)
+- [`docs/demos/markdown/README.md`](docs/demos/markdown/README.md)
 - [`docs/demos/mermaid/README.md`](docs/demos/mermaid/README.md)
 - [`examples/README.md`](examples/README.md)
 - [`spec/grammar.ebnf`](spec/grammar.ebnf)
@@ -169,12 +175,14 @@ npm run demo:generate
 - Combined quality checks: `orgscript check <file>`
 - Machine-readable combined checks: `orgscript check <file> --json`
 - Canonical JSON export: `orgscript export json <file>`
+- Markdown summary export: `orgscript export markdown <file>`
 - Mermaid export for `process` and `stateflow`: `orgscript export mermaid <file>`
 - Machine-readable diagnostics: `orgscript validate <file> --json`, `orgscript lint <file> --json`, `orgscript check <file> --json`
 - Golden snapshot tests for AST, canonical model, and formatter output
 - Stable lint severities: `error`, `warning`, `info`
 - Canonical master spec: [`spec/language-spec.md`](spec/language-spec.md)
 - Initial VS Code syntax-highlighting scaffold: [`editors/vscode`](editors/vscode)
+- Generated demo artifacts for Mermaid and Markdown summaries under [`docs/demos`](docs/demos)
 
 ## Quick start
 
@@ -189,6 +197,7 @@ node ./bin/orgscript.js format ./examples/craft-business-lead-to-order.orgs --ch
 node ./bin/orgscript.js lint ./tests/lint/process-missing-trigger.orgs
 node ./bin/orgscript.js lint ./tests/lint/process-missing-trigger.orgs --json
 node ./bin/orgscript.js export json ./examples/craft-business-lead-to-order.orgs
+node ./bin/orgscript.js export markdown ./examples/craft-business-lead-to-order.orgs
 node ./bin/orgscript.js export mermaid ./examples/craft-business-lead-to-order.orgs
 ```
 
@@ -312,6 +321,13 @@ OrgScript exposes stable JSON diagnostics for CI, editors, AI systems, and downs
 - Example catalog: [`examples/README.md`](examples/README.md)
 - VS Code editor scaffold: [`editors/vscode/README.md`](editors/vscode/README.md)
 
+## Visible outputs
+
+OrgScript currently produces two human-facing output types from the same source file:
+
+- Mermaid diagrams via `orgscript export mermaid <file>`
+- Markdown summaries via `orgscript export markdown <file>`
+
 ## Editor support
 
 OrgScript now ships with a first VS Code syntax-highlighting scaffold under [`editors/vscode`](editors/vscode).
@@ -346,6 +362,7 @@ orgscript format file.orgs --check
 orgscript lint file.orgs
 orgscript lint file.orgs --json
 orgscript export json file.orgs
+orgscript export markdown file.orgs
 orgscript export mermaid file.orgs
 orgscript check file.orgs
 orgscript check file.orgs --json
@@ -361,6 +378,7 @@ See [`docs/cli-v0.1-plan.md`](docs/cli-v0.1-plan.md) for the implementation plan
 
 ```text
 npm test
+npm run export:markdown
 npm run export:mermaid
 npm run demo:generate
 npm run check

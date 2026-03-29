@@ -17,6 +17,10 @@ docs/
   governance.md
   cli-v0.1-plan.md
   demos/
+    markdown/
+      README.md
+      lead-qualification.summary.md
+      order-approval.summary.md
     mermaid/
       README.md
       lead-qualification.mermaid.md

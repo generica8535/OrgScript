@@ -5,6 +5,7 @@ const path = require("path");
 const { formatDocument } = require("../src/formatter");
 const { buildModel } = require("../src/validate");
 const { toCanonicalModel } = require("../src/export-json");
+const { toMarkdownSummary } = require("../src/export-markdown");
 const { toMermaidMarkdown } = require("../src/export-mermaid");
 
 const repoRoot = path.resolve(__dirname, "..");
@@ -31,6 +32,7 @@ for (const file of files) {
   const astOutputPath = path.join(goldenDir, `${baseName}.ast.json`);
   const modelOutputPath = path.join(goldenDir, `${baseName}.model.json`);
   const formattedOutputPath = path.join(goldenDir, `${baseName}.formatted.orgs`);
+  const summaryOutputPath = path.join(goldenDir, `${baseName}.summary.md`);
   const mermaidOutputPath = path.join(goldenDir, `${baseName}.mermaid.md`);
   const canonicalModel = toCanonicalModel(result.ast);
 
@@ -45,6 +47,7 @@ for (const file of files) {
     "utf8"
   );
   fs.writeFileSync(formattedOutputPath, formatDocument(result.ast), "utf8");
+  fs.writeFileSync(summaryOutputPath, toMarkdownSummary(canonicalModel), "utf8");
 
   try {
     fs.writeFileSync(mermaidOutputPath, toMermaidMarkdown(canonicalModel), "utf8");

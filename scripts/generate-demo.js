@@ -4,10 +4,12 @@ const fs = require("fs");
 const path = require("path");
 const { buildModel } = require("../src/validate");
 const { toCanonicalModel } = require("../src/export-json");
+const { toMarkdownSummary } = require("../src/export-markdown");
 const { toMermaidMarkdown } = require("../src/export-mermaid");
 
 const repoRoot = path.resolve(__dirname, "..");
-const outputDir = path.join(repoRoot, "docs", "demos", "mermaid");
+const mermaidOutputDir = path.join(repoRoot, "docs", "demos", "mermaid");
+const markdownOutputDir = path.join(repoRoot, "docs", "demos", "markdown");
 
 const demos = [
   {
@@ -27,7 +29,8 @@ const demos = [
 ];
 
 function main() {
-  fs.mkdirSync(outputDir, { recursive: true });
+  fs.mkdirSync(mermaidOutputDir, { recursive: true });
+  fs.mkdirSync(markdownOutputDir, { recursive: true });
 
   for (const demo of demos) {
     const result = buildModel(demo.source);
@@ -39,11 +42,17 @@ function main() {
     const markdown = toMermaidMarkdown(toCanonicalModel(result.ast));
     const rawMermaid = extractFirstMermaidBlock(markdown);
 
-    fs.writeFileSync(path.join(outputDir, `${demo.slug}.mermaid.md`), markdown, "utf8");
-    fs.writeFileSync(path.join(outputDir, `${demo.slug}.mmd`), `${rawMermaid}\n`, "utf8");
+    fs.writeFileSync(path.join(mermaidOutputDir, `${demo.slug}.mermaid.md`), markdown, "utf8");
+    fs.writeFileSync(path.join(mermaidOutputDir, `${demo.slug}.mmd`), `${rawMermaid}\n`, "utf8");
+    fs.writeFileSync(
+      path.join(markdownOutputDir, `${demo.slug}.summary.md`),
+      toMarkdownSummary(toCanonicalModel(result.ast)),
+      "utf8"
+    );
   }
 
-  fs.writeFileSync(path.join(outputDir, "README.md"), renderReadme(), "utf8");
+  fs.writeFileSync(path.join(mermaidOutputDir, "README.md"), renderMermaidReadme(), "utf8");
+  fs.writeFileSync(path.join(markdownOutputDir, "README.md"), renderMarkdownReadme(), "utf8");
 }
 
 function extractFirstMermaidBlock(markdown) {
@@ -56,7 +65,7 @@ function extractFirstMermaidBlock(markdown) {
   return match[1];
 }
 
-function renderReadme() {
+function renderMermaidReadme() {
   const lines = [
     "# Mermaid demos",
     "",
@@ -80,7 +89,7 @@ function renderReadme() {
   ];
 
   for (const demo of demos) {
-    const sourceRelative = path.relative(outputDir, demo.source).replace(/\\/g, "/");
+    const sourceRelative = path.relative(mermaidOutputDir, demo.source).replace(/\\/g, "/");
     lines.push(
       `| ${demo.title} | [${path.basename(demo.source)}](${sourceRelative}) | [${demo.slug}.mermaid.md](./${demo.slug}.mermaid.md) | [${demo.slug}.mmd](./${demo.slug}.mmd) |`
     );
@@ -96,6 +105,51 @@ function renderReadme() {
   );
   lines.push(
     "- If you change Mermaid export behavior, regenerate this folder with `npm run demo:generate` and review the diffs."
+  );
+  lines.push("");
+
+  return `${lines.join("\n")}\n`;
+}
+
+function renderMarkdownReadme() {
+  const lines = [
+    "# Markdown summary demos",
+    "",
+    "This folder shows the shortest path from OrgScript source to human-readable Markdown summaries.",
+    "",
+    "Each demo keeps the source file in `examples/` and generates one downstream artifact here:",
+    "",
+    "- `*.summary.md`: a concise Markdown summary of the modeled logic",
+    "",
+    "## Generate",
+    "",
+    "```text",
+    "npm run demo:generate",
+    "```",
+    "",
+    "## Demos",
+    "",
+    "| Demo | Source | Markdown summary |",
+    "| --- | --- | --- |",
+  ];
+
+  for (const demo of demos) {
+    const sourceRelative = path.relative(markdownOutputDir, demo.source).replace(/\\/g, "/");
+    lines.push(
+      `| ${demo.title} | [${path.basename(demo.source)}](${sourceRelative}) | [${demo.slug}.summary.md](./${demo.slug}.summary.md) |`
+    );
+    lines.push(`|  |  | ${demo.description} |`);
+  }
+
+  lines.push("");
+  lines.push("## Notes");
+  lines.push("");
+  lines.push("- These artifacts are generated from the current Markdown summary exporter.");
+  lines.push(
+    "- The summaries are intentionally concise and deterministic rather than prose-heavy."
+  );
+  lines.push(
+    "- If you change Markdown export behavior, regenerate this folder with `npm run demo:generate` and review the diffs."
   );
   lines.push("");
 
