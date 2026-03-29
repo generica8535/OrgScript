@@ -6,6 +6,16 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-03-29
+
+- Refined VS Code TextMate grammar to support inline keywords and dotted properties correctly.
+- Improved VS Code extension onboarding and local testing documentation.
+- Revamped `README.md` with a 60-second quickstart and a visual "Three-Value Flow" showcase.
+- Curated the example catalog into Simple, Realistic, and Advanced categories with clearer descriptions.
+- Polished CLI diagnostics UX with bracketed codes, padded severities, and "passed" status messaging.
+- Added `docs/language-evolution.md` for clear governance on language vs. tooling growth.
+- Updated the diagnostics text contract in `spec/diagnostics.md` to match reality.
+
 ## [0.4.0] - 2026-03-29
 
 - Added `orgscript format <file> --check` for canonical formatting checks without rewriting files.
