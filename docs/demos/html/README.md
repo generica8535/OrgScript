@@ -18,6 +18,10 @@ npm run demo:generate
 | --- | --- | --- |
 | Craft Business: Lead to Order | [craft-business-lead-to-order.orgs](../../../examples/craft-business-lead-to-order.orgs) | [craft-business-lead-to-order.html](./craft-business-lead-to-order.html) |
 |  |  | Our hero example showcasing multi-block processes, rules, and stateflows in a realistic business scenario. |
+| Hiring: Standard Candidate Process | [hiring-process.orgs](../../../examples/hiring-process.orgs) | [hiring-process.html](./hiring-process.html) |
+|  |  | A multi-role hiring process including GDPR policies, manager permissions, and conditional rejection branches. |
+| Incident Escalation SLA | [incident-escalation.orgs](../../../examples/incident-escalation.orgs) | [incident-escalation.html](./incident-escalation.html) |
+|  |  | Operational incident handling with time-based escalation policies and on-call role definitions. |
 | Lead qualification process | [lead-qualification.orgs](../../../examples/lead-qualification.orgs) | [lead-qualification.html](./lead-qualification.html) |
 |  |  | A compact process example that shows trigger, branching, assignment, notification, and state transition. |
 | Order approval stateflow | [order-approval.orgs](../../../examples/order-approval.orgs) | [order-approval.html](./order-approval.html) |
