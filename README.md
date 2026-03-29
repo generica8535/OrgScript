@@ -157,6 +157,7 @@ See the full example in [`examples/craft-business-lead-to-order.orgs`](examples/
 npm install
 node ./bin/orgscript.js validate ./examples/craft-business-lead-to-order.orgs
 node ./bin/orgscript.js validate ./examples/craft-business-lead-to-order.orgs --json
+node ./bin/orgscript.js check ./examples/craft-business-lead-to-order.orgs
 node ./bin/orgscript.js format ./examples/craft-business-lead-to-order.orgs
 node ./bin/orgscript.js format ./examples/craft-business-lead-to-order.orgs --check
 node ./bin/orgscript.js lint ./tests/lint/process-missing-trigger.orgs
