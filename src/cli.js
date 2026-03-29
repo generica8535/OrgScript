@@ -6,6 +6,7 @@ const {
   createValidateReport,
 } = require("./diagnostics");
 const { toCanonicalModel } = require("./export-json");
+const { toMermaidMarkdown } = require("./export-mermaid");
 const { formatDocument } = require("./formatter");
 const { lintDocument, renderLintReport, summarizeFindings } = require("./linter");
 const { buildModel, validateFile } = require("./validate");
@@ -19,6 +20,7 @@ Usage:
   orgscript format <file> [--check]
   orgscript lint <file> [--json]
   orgscript export json <file>
+  orgscript export mermaid <file>
 `);
 }
 
@@ -76,6 +78,29 @@ function run(args) {
     const canonical = toCanonicalModel(result.ast);
     console.log(JSON.stringify(canonical, null, 2));
     process.exit(0);
+  }
+
+  if (command === "export" && maybeSubcommand === "mermaid") {
+    const absolutePath = resolveFile("export", maybeFile);
+    const result = buildModel(absolutePath);
+
+    if (!result.ok) {
+      printIssues(`Cannot export invalid OrgScript: ${absolutePath}`, [
+        ...result.syntaxIssues,
+        ...result.semanticIssues,
+      ]);
+      process.exit(1);
+    }
+
+    try {
+      const canonical = toCanonicalModel(result.ast);
+      const mermaid = toMermaidMarkdown(canonical);
+      process.stdout.write(mermaid);
+      process.exit(0);
+    } catch (error) {
+      console.error(`Cannot export Mermaid from ${absolutePath}: ${error.message}`);
+      process.exit(1);
+    }
   }
 
   if (command === "format") {

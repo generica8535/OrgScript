@@ -147,6 +147,7 @@ See the full example in [`examples/craft-business-lead-to-order.orgs`](examples/
 - AST-backed linting: `orgscript lint <file>`
 - Combined quality checks: `orgscript check <file>`
 - Canonical JSON export: `orgscript export json <file>`
+- Mermaid export for `process` and `stateflow`: `orgscript export mermaid <file>`
 - Machine-readable diagnostics: `orgscript validate <file> --json`, `orgscript lint <file> --json`
 - Golden snapshot tests for AST, canonical model, and formatter output
 - Stable lint severities: `error`, `warning`, `info`
@@ -163,6 +164,7 @@ node ./bin/orgscript.js format ./examples/craft-business-lead-to-order.orgs --ch
 node ./bin/orgscript.js lint ./tests/lint/process-missing-trigger.orgs
 node ./bin/orgscript.js lint ./tests/lint/process-missing-trigger.orgs --json
 node ./bin/orgscript.js export json ./examples/craft-business-lead-to-order.orgs
+node ./bin/orgscript.js export mermaid ./examples/craft-business-lead-to-order.orgs
 ```
 
 Exit codes are CI-friendly:
@@ -199,10 +201,13 @@ orgscript format file.orgs --check
 orgscript lint file.orgs
 orgscript lint file.orgs --json
 orgscript export json file.orgs
+orgscript export mermaid file.orgs
 orgscript check file.orgs
 ```
 
 `orgscript check` runs `validate`, `lint`, and `format --check` in that order and fails on validation errors, lint errors, or formatting drift. Warnings and info findings alone do not fail the command.
+
+`orgscript export mermaid` currently supports `process` and `stateflow` blocks and emits a Markdown document with Mermaid code blocks for direct use in GitHub or docs.
 
 See [`docs/cli-v0.1-plan.md`](docs/cli-v0.1-plan.md) for the implementation plan.
 
@@ -210,6 +215,7 @@ See [`docs/cli-v0.1-plan.md`](docs/cli-v0.1-plan.md) for the implementation plan
 
 ```text
 npm test
+npm run export:mermaid
 npm run format:check:all
 npm run validate:all
 npm run lint:all

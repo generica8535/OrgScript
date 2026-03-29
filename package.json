@@ -16,6 +16,7 @@
     "validate:all": "node ./scripts/validate-all.js",
     "lint:all": "node ./scripts/lint-all.js",
     "export:json": "node ./bin/orgscript.js export json ./examples/craft-business-lead-to-order.orgs",
+    "export:mermaid": "node ./bin/orgscript.js export mermaid ./examples/craft-business-lead-to-order.orgs",
     "golden:generate": "node ./scripts/generate-golden.js",
     "test": "node ./tests/run.js"
   },

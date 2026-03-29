@@ -15,6 +15,7 @@ Implemented:
 - `format --check`
 - `lint`
 - `export json`
+- `export mermaid`
 - `validate --json`
 - `lint --json`
 - `check`
@@ -44,6 +45,20 @@ Output:
 ### `orgscript export json <file>`
 
 Exports the parsed document into the canonical JSON model.
+
+### `orgscript export mermaid <file>`
+
+Exports supported blocks as a Markdown document with Mermaid code blocks.
+
+Current scope:
+
+- `process` -> `flowchart TD`
+- `stateflow` -> `stateDiagram-v2`
+
+Current limitations:
+
+- unsupported block types are skipped and called out in the export
+- files without any supported blocks fail with a clear error
 
 ### `orgscript format <file>`
 

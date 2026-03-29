@@ -5,6 +5,7 @@ const path = require("path");
 const { formatDocument } = require("../src/formatter");
 const { buildModel } = require("../src/validate");
 const { toCanonicalModel } = require("../src/export-json");
+const { toMermaidMarkdown } = require("../src/export-mermaid");
 
 const repoRoot = path.resolve(__dirname, "..");
 const examplesDir = path.join(repoRoot, "examples");
@@ -30,6 +31,8 @@ for (const file of files) {
   const astOutputPath = path.join(goldenDir, `${baseName}.ast.json`);
   const modelOutputPath = path.join(goldenDir, `${baseName}.model.json`);
   const formattedOutputPath = path.join(goldenDir, `${baseName}.formatted.orgs`);
+  const mermaidOutputPath = path.join(goldenDir, `${baseName}.mermaid.md`);
+  const canonicalModel = toCanonicalModel(result.ast);
 
   fs.writeFileSync(
     astOutputPath,
@@ -38,10 +41,18 @@ for (const file of files) {
   );
   fs.writeFileSync(
     modelOutputPath,
-    `${JSON.stringify(toCanonicalModel(result.ast), null, 2)}\n`,
+    `${JSON.stringify(canonicalModel, null, 2)}\n`,
     "utf8"
   );
   fs.writeFileSync(formattedOutputPath, formatDocument(result.ast), "utf8");
+
+  try {
+    fs.writeFileSync(mermaidOutputPath, toMermaidMarkdown(canonicalModel), "utf8");
+  } catch (error) {
+    if (fs.existsSync(mermaidOutputPath)) {
+      fs.unlinkSync(mermaidOutputPath);
+    }
+  }
 
   console.log(`Wrote golden files for ${file}`);
 }

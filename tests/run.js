@@ -7,6 +7,7 @@ const path = require("path");
 const { formatDocument } = require("../src/formatter");
 const { buildModel } = require("../src/validate");
 const { toCanonicalModel } = require("../src/export-json");
+const { toMermaidMarkdown } = require("../src/export-mermaid");
 const { lintDocument, renderLintReport, summarizeFindings } = require("../src/linter");
 
 const repoRoot = path.resolve(__dirname, "..");
@@ -26,6 +27,7 @@ function run() {
   testCliDiagnosticsAndExitCodes();
   testFormatCheckMode();
   testCheckCommand();
+  testMermaidExport();
   console.log("All tests passed.");
 }
 
@@ -47,6 +49,7 @@ function testGoldenSnapshots() {
     const astPath = path.join(goldenDir, `${baseName}.ast.json`);
     const modelPath = path.join(goldenDir, `${baseName}.model.json`);
     const formattedPath = path.join(goldenDir, `${baseName}.formatted.orgs`);
+    const mermaidPath = path.join(goldenDir, `${baseName}.mermaid.md`);
 
     const actualAst = JSON.stringify(normalizeAst(result.ast), null, 2);
     const expectedAst = fs.readFileSync(astPath, "utf8").trimEnd();
@@ -63,6 +66,16 @@ function testGoldenSnapshots() {
       expectedFormatted,
       `Formatted snapshot mismatch for ${file}`
     );
+
+    if (fs.existsSync(mermaidPath)) {
+      const actualMermaid = toMermaidMarkdown(toCanonicalModel(result.ast));
+      const expectedMermaid = fs.readFileSync(mermaidPath, "utf8");
+      assert.strictEqual(
+        actualMermaid,
+        expectedMermaid,
+        `Mermaid snapshot mismatch for ${file}`
+      );
+    }
   }
 }
 
@@ -246,6 +259,38 @@ function testCliDiagnosticsAndExitCodes() {
   const exportPayload = JSON.parse(exportJson.stdout);
   assert.strictEqual(exportPayload.type, "document");
 
+  const exportMermaid = runCli([
+    cliPath,
+    "export",
+    "mermaid",
+    "./examples/craft-business-lead-to-order.orgs",
+  ]);
+  assert.strictEqual(exportMermaid.status, 0, "Expected export mermaid to succeed");
+  assert.ok(
+    exportMermaid.stdout.includes("# OrgScript Mermaid Export"),
+    "Expected Mermaid export heading"
+  );
+
+  const exportMermaidUnsupported = runCli([
+    cliPath,
+    "export",
+    "mermaid",
+    "./examples/service-escalation.orgs",
+  ]);
+  assert.strictEqual(
+    exportMermaidUnsupported.status,
+    1,
+    "Expected export mermaid to fail when no supported blocks exist"
+  );
+  assert.ok(
+    exportMermaidUnsupported.stderr.includes("Cannot export Mermaid"),
+    "Expected Mermaid export failure message"
+  );
+  assert.ok(
+    exportMermaidUnsupported.stderr.includes("No Mermaid-exportable blocks found"),
+    "Expected unsupported Mermaid export reason"
+  );
+
   const formatCommand = runCli([
     cliPath,
     "format",
@@ -391,6 +436,38 @@ function testCheckCommand() {
     "Expected skipped format in check output"
   );
   assert.ok(checkInvalid.stderr.includes("Result: FAIL"), "Expected failed summary for invalid file");
+}
+
+function testMermaidExport() {
+  const cliPath = path.join(repoRoot, "bin", "orgscript.js");
+  const supportedFixtures = [
+    "craft-business-lead-to-order",
+    "lead-qualification",
+    "order-approval",
+  ];
+
+  for (const fixture of supportedFixtures) {
+    const exported = runCli([cliPath, "export", "mermaid", `./examples/${fixture}.orgs`]);
+    assert.strictEqual(exported.status, 0, `Expected Mermaid export to succeed for ${fixture}`);
+    const expected = fs.readFileSync(path.join(goldenDir, `${fixture}.mermaid.md`), "utf8");
+    assert.strictEqual(exported.stdout, expected, `Unexpected Mermaid export for ${fixture}`);
+  }
+
+  const unsupportedMermaid = runCli([
+    cliPath,
+    "export",
+    "mermaid",
+    "./examples/service-escalation.orgs",
+  ]);
+  assert.strictEqual(
+    unsupportedMermaid.status,
+    1,
+    "Expected Mermaid export to fail for unsupported example"
+  );
+  assert.ok(
+    unsupportedMermaid.stderr.includes("No Mermaid-exportable blocks found"),
+    "Expected unsupported Mermaid export message"
+  );
 }
 
 function runCli(args) {
