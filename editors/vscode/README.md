@@ -1,6 +1,6 @@
 # OrgScript VS Code
 
-This folder contains a locally testable VS Code extension for `.orgs` files.
+This folder contains the official, locally testable VS Code extension for `.orgs` files.
 
 ## What is included
 
@@ -23,15 +23,17 @@ OrgScript does not define an official comment syntax in the language spec yet, s
 
 ## Local testing in VS Code
 
-1. Open the repository in VS Code.
-2. Open the `editors/vscode/` folder as the extension project if you want to inspect the extension files directly.
-3. Press `F5` in VS Code while `editors/vscode/` is the active extension workspace.
-4. In the Extension Development Host, open one of these files:
+1. Open this repository in VS Code.
+2. Open the `editors/vscode/` folder directly in VS Code, or add it to your Workspace. It works best if `editors/vscode/` is the active root workspace because `.vscode/launch.json` is located there.
+3. Open the Run and Debug side panel (Ctrl+Shift+D).
+4. Make sure "Launch OrgScript Extension" is selected at the top.
+5. Press `F5` to start the Extension Development Host.
+6. In the newly opened Extension Development Host window, open the root `OrgScript` folder and open one of these realistic test files:
    - `examples/craft-business-lead-to-order.orgs`
    - `examples/order-approval.orgs`
    - `examples/service-escalation.orgs`
-5. Confirm that the language mode is `OrgScript` and that blocks, statements, strings, operators, and dotted references are highlighted.
-6. If VS Code asks for a launch configuration, use `Launch OrgScript Extension` from `editors/vscode/.vscode/launch.json`.
+7. Confirm that the language mode in the bottom right corner is `OrgScript`.
+8. Check that blocks, statements, strings, operators, and dotted references are highlighted correctly (including inline occurrences of `then` and dotted properties).
 
 ## Good demo files
 

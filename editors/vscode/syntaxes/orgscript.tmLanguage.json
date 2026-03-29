@@ -35,7 +35,7 @@
     "top-level-blocks": {
       "patterns": [
         {
-          "match": "^(\\s*)(process|stateflow|rule|role|policy|metric|event)(\\s+)([A-Za-z_][A-Za-z0-9_.-]*)\\b",
+          "match": "^(\\s*)(process|stateflow|rule|role|policy|metric|event)(\\s+)([A-Za-z_][A-Za-z0-9_.-]*)",
           "captures": {
             "2": {
               "name": "storage.type.orgscript"
@@ -58,12 +58,9 @@
           }
         },
         {
-          "match": "^(\\s*)(applies)(\\s+)(to)\\b",
+          "match": "^(\\s*)(applies\\s+to)\\b",
           "captures": {
             "2": {
-              "name": "keyword.declaration.orgscript"
-            },
-            "4": {
               "name": "keyword.declaration.orgscript"
             }
           }
@@ -73,23 +70,16 @@
     "control-keywords": {
       "patterns": [
         {
-          "match": "^(\\s*)(else)(\\s+)(if)\\b",
-          "captures": {
-            "2": {
-              "name": "keyword.control.orgscript"
-            },
-            "4": {
-              "name": "keyword.control.orgscript"
-            }
-          }
+          "match": "\\b(else\\s+if)\\b",
+          "name": "keyword.control.conditional.orgscript"
         },
         {
-          "match": "^(\\s*)(if|when|then|else)\\b",
-          "captures": {
-            "2": {
-              "name": "keyword.control.orgscript"
-            }
-          }
+          "match": "\\b(if|then|else)\\b",
+          "name": "keyword.control.conditional.orgscript"
+        },
+        {
+          "match": "\\b(when)\\b",
+          "name": "keyword.control.orgscript"
         },
         {
           "match": "\\b(with|to|and|or)\\b",
@@ -103,7 +93,7 @@
           "match": "^(\\s*)(assign|transition|notify|create|update|require|stop)\\b",
           "captures": {
             "2": {
-              "name": "keyword.control.orgscript"
+              "name": "keyword.control.statement.orgscript"
             }
           }
         }
@@ -127,7 +117,7 @@
     "booleans": {
       "patterns": [
         {
-          "match": "\\b(?:true|false)\\b",
+          "match": "\\b(true|false)\\b",
           "name": "constant.language.boolean.orgscript"
         }
       ]
@@ -143,7 +133,7 @@
     "operators": {
       "patterns": [
         {
-          "match": "(?:!=|<=|>=|->|=|<|>)",
+          "match": "(!=|<=|>=|->|=|<|>)",
           "name": "keyword.operator.orgscript"
         }
       ]
@@ -152,7 +142,7 @@
       "patterns": [
         {
           "match": "\\b[A-Za-z_][A-Za-z0-9_-]*(?:\\.[A-Za-z_][A-Za-z0-9_-]*)+\\b",
-          "name": "variable.other.member.orgscript"
+          "name": "variable.other.property.orgscript"
         }
       ]
     }
