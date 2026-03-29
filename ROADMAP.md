@@ -37,7 +37,7 @@
 - Improve consistency of human-readable CLI diagnostics
 - Add an initial VS Code syntax highlighting scaffold
 
-## v0.5
+## v0.5 (Completed)
 
 - Improve VS Code syntax highlighting and local testing flow
 - Add a visual source-to-artifact showcase in the README
@@ -45,12 +45,22 @@
 - Polish diagnostics UX and `check` output
 - Add lightweight language evolution and compatibility notes
 
-## Unreleased
+## v0.6 (Completed)
 
-- Open the v0.5.0 adoption, editor, and polish milestone
-- Strengthen the repo front door and demo story
-- Improve example navigation and onboarding paths
-- Refine editor and diagnostics polish without widening the language core
+- **Mermaid Export Polish**: improve presentation and layout-friendliness
+- **Markdown Summary v2**: better multi-block support and deliberate layout
+- **HTML Documentation Export**: first static HTML doc output path
+- **Demos & Showcase Upgrade**: stronger source → artifact visual story
+- **Integration Contract Polish**: tighten and document exporter stability
+
+## v0.7 (Planned)
+
+Theme: **Packaging, Distribution, and Trust**
+
+- **CLI Experience**: Globally installable via `npm install -g orgscript`.
+- **VS Code Extension Publication**: Marketplace readiness and metadata.
+- **Documentation Site**: Automated static documentation on GitHub Pages.
+- **Trust & Showcase**: Complex business logic scenarios and integration examples.
 
 ## Later
 
