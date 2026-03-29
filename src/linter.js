@@ -11,14 +11,14 @@ const SEVERITY_RANK = {
 };
 
 const RULES = {
-  "process-missing-trigger": { severity: SEVERITY.warning },
-  "process-multiple-triggers": { severity: SEVERITY.error },
-  "process-trigger-order": { severity: SEVERITY.info },
-  "rule-missing-scope": { severity: SEVERITY.info },
-  "state-orphaned": { severity: SEVERITY.warning },
-  "state-no-incoming": { severity: SEVERITY.info },
-  "role-conflicting-permission": { severity: SEVERITY.error },
-  "unreachable-statement": { severity: SEVERITY.warning },
+  "lint.process-missing-trigger": { severity: SEVERITY.warning },
+  "lint.process-multiple-triggers": { severity: SEVERITY.error },
+  "lint.process-trigger-order": { severity: SEVERITY.info },
+  "lint.rule-missing-scope": { severity: SEVERITY.info },
+  "lint.state-orphaned": { severity: SEVERITY.warning },
+  "lint.state-no-incoming": { severity: SEVERITY.info },
+  "lint.role-conflicting-permission": { severity: SEVERITY.error },
+  "lint.unreachable-statement": { severity: SEVERITY.warning },
 };
 
 function lintDocument(ast) {
@@ -47,18 +47,19 @@ function summarizeFindings(findings) {
 
 function renderLintReport(filePath, findings) {
   if (findings.length === 0) {
-    return [`No lint findings: ${filePath}`];
+    return [`LINT ${filePath}`, "  status: ok", "  summary: 0 error(s), 0 warning(s), 0 info"];
   }
 
   const summary = summarizeFindings(findings);
   const lines = [
-    `Lint findings: ${filePath}`,
-    `  summary: ${summary.error} error(s), ${summary.warning} warning(s), ${summary.info} info finding(s)`,
+    `LINT ${filePath}`,
+    `  status: ${summary.error > 0 ? "failed" : "ok"}`,
+    `  summary: ${summary.error} error(s), ${summary.warning} warning(s), ${summary.info} info`,
   ];
 
   for (const finding of findings) {
     lines.push(
-      `  ${finding.severity.toUpperCase()} ${finding.code} line ${finding.line}: ${finding.message}`
+      `  ${finding.severity.toUpperCase()} ${finding.code} ${filePath}:${finding.line} ${finding.message}`
     );
   }
 
@@ -106,7 +107,7 @@ function lintProcess(node, findings) {
   if (triggers.length === 0) {
     findings.push(
       createLintIssue(
-        "process-missing-trigger",
+        "lint.process-missing-trigger",
         1,
         `Process \`${node.name}\` has no \`when\` trigger.`
       )
@@ -116,7 +117,7 @@ function lintProcess(node, findings) {
   if (triggers.length > 1) {
     findings.push(
       createLintIssue(
-        "process-multiple-triggers",
+        "lint.process-multiple-triggers",
         triggers[1].line,
         `Process \`${node.name}\` declares multiple \`when\` triggers.`
       )
@@ -129,7 +130,7 @@ function lintProcess(node, findings) {
       if (body[index].type === "WhenNode") {
         findings.push(
           createLintIssue(
-            "process-trigger-order",
+            "lint.process-trigger-order",
             body[index].line,
             `Process \`${node.name}\` declares a \`when\` trigger after operational statements.`
           )
@@ -145,7 +146,7 @@ function lintRule(node, findings) {
   if (!node.appliesTo) {
     findings.push(
       createLintIssue(
-        "rule-missing-scope",
+        "lint.rule-missing-scope",
         1,
         `Rule \`${node.name}\` does not declare an \`applies to\` scope.`
       )
@@ -180,7 +181,7 @@ function lintStateflow(node, findings) {
     if (inCount === 0 && outCount === 0) {
       findings.push(
         createLintIssue(
-          "state-orphaned",
+          "lint.state-orphaned",
           state.line,
           `State \`${state.value}\` in stateflow \`${node.name}\` has no incoming or outgoing transitions.`
         )
@@ -191,7 +192,7 @@ function lintStateflow(node, findings) {
     if (index > 0 && inCount === 0) {
       findings.push(
         createLintIssue(
-          "state-no-incoming",
+          "lint.state-no-incoming",
           state.line,
           `State \`${state.value}\` in stateflow \`${node.name}\` has no incoming transitions.`
         )
@@ -207,7 +208,7 @@ function lintRole(node, findings) {
     if (can.has(permission.value)) {
       findings.push(
         createLintIssue(
-          "role-conflicting-permission",
+          "lint.role-conflicting-permission",
           permission.line,
           `Role \`${node.name}\` declares \`${permission.value}\` in both \`can\` and \`cannot\`.`
         )
@@ -223,7 +224,7 @@ function lintStatementBlock(statements, findings) {
     if (terminated) {
       findings.push(
         createLintIssue(
-          "unreachable-statement",
+          "lint.unreachable-statement",
           statement.line || 1,
           "This statement is unreachable because the previous branch always stops."
         )
@@ -253,7 +254,7 @@ function lintActionBlock(statements, findings) {
     if (terminated) {
       findings.push(
         createLintIssue(
-          "unreachable-statement",
+          "lint.unreachable-statement",
           statement.line || 1,
           "This statement is unreachable because the previous branch always stops."
         )

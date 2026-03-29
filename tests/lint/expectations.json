@@ -2,59 +2,59 @@
   {
     "file": "process-missing-trigger.orgs",
     "expectedSeverities": {
-      "process-missing-trigger": "warning"
+      "lint.process-missing-trigger": "warning"
     },
     "expectedCodes": [
-      "process-missing-trigger"
+      "lint.process-missing-trigger"
     ]
   },
   {
     "file": "process-multiple-triggers.orgs",
     "expectedSeverities": {
-      "process-multiple-triggers": "error",
-      "process-trigger-order": "info"
+      "lint.process-multiple-triggers": "error",
+      "lint.process-trigger-order": "info"
     },
     "expectedCodes": [
-      "process-multiple-triggers",
-      "process-trigger-order"
+      "lint.process-multiple-triggers",
+      "lint.process-trigger-order"
     ]
   },
   {
     "file": "unreachable-after-stop.orgs",
     "expectedSeverities": {
-      "unreachable-statement": "warning"
+      "lint.unreachable-statement": "warning"
     },
     "expectedCodes": [
-      "unreachable-statement"
+      "lint.unreachable-statement"
     ]
   },
   {
     "file": "orphan-stateflow.orgs",
     "expectedSeverities": {
-      "state-orphaned": "warning",
-      "state-no-incoming": "info"
+      "lint.state-orphaned": "warning",
+      "lint.state-no-incoming": "info"
     },
     "expectedCodes": [
-      "state-orphaned",
-      "state-no-incoming"
+      "lint.state-orphaned",
+      "lint.state-no-incoming"
     ]
   },
   {
     "file": "conflicting-role-permissions.orgs",
     "expectedSeverities": {
-      "role-conflicting-permission": "error"
+      "lint.role-conflicting-permission": "error"
     },
     "expectedCodes": [
-      "role-conflicting-permission"
+      "lint.role-conflicting-permission"
     ]
   },
   {
     "file": "rule-missing-scope.orgs",
     "expectedSeverities": {
-      "rule-missing-scope": "info"
+      "lint.rule-missing-scope": "info"
     },
     "expectedCodes": [
-      "rule-missing-scope"
+      "lint.rule-missing-scope"
     ]
   }
 ]

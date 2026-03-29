@@ -10,8 +10,8 @@ const TOP_LEVEL_KEYWORDS = new Set([
   "event",
 ]);
 
-function createSyntaxIssue(line, message) {
-  return { line, message };
+function createSyntaxIssue(line, code, message) {
+  return { line, code, message };
 }
 
 function parseDocument(tokens, filePath) {
@@ -27,7 +27,11 @@ function parseDocument(tokens, filePath) {
 
     if (line.level !== 0) {
       state.issues.push(
-        createSyntaxIssue(line.line, "Indented content must belong to a top-level block.")
+        createSyntaxIssue(
+          line.line,
+          "syntax.indented-content-without-block",
+          "Indented content must belong to a top-level block."
+        )
       );
       advance(state);
       continue;
@@ -56,7 +60,15 @@ function parseTopLevelBlock(state) {
     const message = TOP_LEVEL_KEYWORDS.has(keyword)
       ? `Top-level ${keyword} block requires a name.`
       : `Unknown top-level block \`${keyword || line.text}\`.`;
-    state.issues.push(createSyntaxIssue(line.line, message));
+    state.issues.push(
+      createSyntaxIssue(
+        line.line,
+        TOP_LEVEL_KEYWORDS.has(keyword)
+          ? "syntax.top-level-name-required"
+          : "syntax.unknown-top-level-block",
+        message
+      )
+    );
     skipNestedBlock(state, 0);
     return null;
   }
@@ -107,7 +119,11 @@ function parseRuleBlock(state, name) {
 
     if (!match) {
       state.issues.push(
-        createSyntaxIssue(line.line, "`applies to` must reference a single entity identifier.")
+        createSyntaxIssue(
+          line.line,
+          "syntax.invalid-rule-scope",
+          "`applies to` must reference a single entity identifier."
+        )
       );
     } else {
       appliesTo = match[1];
@@ -129,7 +145,11 @@ function parseStateflowBlock(state, name) {
 
     if (line.level !== 1) {
       state.issues.push(
-        createSyntaxIssue(line.line, "Unexpected indentation inside stateflow block.")
+        createSyntaxIssue(
+          line.line,
+          "syntax.unexpected-stateflow-indentation",
+          "Unexpected indentation inside stateflow block."
+        )
       );
       advance(state);
       continue;
@@ -150,6 +170,7 @@ function parseStateflowBlock(state, name) {
     state.issues.push(
       createSyntaxIssue(
         line.line,
+        "syntax.invalid-stateflow-section",
         "Stateflow blocks may only contain `states` and `transitions` sections."
       )
     );
@@ -167,7 +188,13 @@ function parseRoleBlock(state, name) {
     const line = peek(state);
 
     if (line.level !== 1) {
-      state.issues.push(createSyntaxIssue(line.line, "Unexpected indentation inside role block."));
+      state.issues.push(
+        createSyntaxIssue(
+          line.line,
+          "syntax.unexpected-role-indentation",
+          "Unexpected indentation inside role block."
+        )
+      );
       advance(state);
       continue;
     }
@@ -180,7 +207,11 @@ function parseRoleBlock(state, name) {
     }
 
     state.issues.push(
-      createSyntaxIssue(line.line, "Role blocks may only contain `can` and `cannot` sections.")
+      createSyntaxIssue(
+        line.line,
+        "syntax.invalid-role-section",
+        "Role blocks may only contain `can` and `cannot` sections."
+      )
     );
     advance(state);
   }
@@ -195,7 +226,13 @@ function parsePolicyBlock(state, name) {
     const line = peek(state);
 
     if (line.level !== 1) {
-      state.issues.push(createSyntaxIssue(line.line, "Unexpected indentation inside policy block."));
+      state.issues.push(
+        createSyntaxIssue(
+          line.line,
+          "syntax.unexpected-policy-indentation",
+          "Unexpected indentation inside policy block."
+        )
+      );
       advance(state);
       continue;
     }
@@ -203,7 +240,11 @@ function parsePolicyBlock(state, name) {
     const match = line.text.match(/^when (.+)$/);
     if (!match) {
       state.issues.push(
-        createSyntaxIssue(line.line, "Policy blocks must start clauses with `when <condition>`.")
+        createSyntaxIssue(
+          line.line,
+          "syntax.policy-clause-must-start-with-when",
+          "Policy blocks must start clauses with `when <condition>`."
+        )
       );
       advance(state);
       continue;
@@ -215,7 +256,11 @@ function parsePolicyBlock(state, name) {
     const thenLine = peek(state);
     if (!thenLine || thenLine.level !== 1 || thenLine.text !== "then") {
       state.issues.push(
-        createSyntaxIssue(line.line, "Policy `when` must be followed by a `then` line.")
+        createSyntaxIssue(
+          line.line,
+          "syntax.policy-missing-then",
+          "Policy `when` must be followed by a `then` line."
+        )
       );
       continue;
     }
@@ -242,7 +287,13 @@ function parseMetricBlock(state, name) {
     const line = peek(state);
 
     if (line.level !== 1) {
-      state.issues.push(createSyntaxIssue(line.line, "Unexpected indentation inside metric block."));
+      state.issues.push(
+        createSyntaxIssue(
+          line.line,
+          "syntax.unexpected-metric-indentation",
+          "Unexpected indentation inside metric block."
+        )
+      );
       advance(state);
       continue;
     }
@@ -266,7 +317,11 @@ function parseMetricBlock(state, name) {
     }
 
     state.issues.push(
-      createSyntaxIssue(line.line, "Metric blocks may only contain `formula`, `owner`, and `target`.")
+      createSyntaxIssue(
+        line.line,
+        "syntax.invalid-metric-section",
+        "Metric blocks may only contain `formula`, `owner`, and `target`."
+      )
     );
     advance(state);
   }
@@ -309,7 +364,11 @@ function parseTransitionList(state, expectedLevel) {
 
     if (!match) {
       state.issues.push(
-        createSyntaxIssue(line.line, "Transition lines must use the form `source -> target`.")
+        createSyntaxIssue(
+          line.line,
+          "syntax.invalid-transition-line",
+          "Transition lines must use the form `source -> target`."
+        )
       );
       advance(state);
       continue;
@@ -359,7 +418,11 @@ function parseStatementBlock(state, expectedLevel, context) {
 
     if (line.level > expectedLevel) {
       state.issues.push(
-        createSyntaxIssue(line.line, "Unexpected indentation. Missing parent statement or section.")
+        createSyntaxIssue(
+          line.line,
+          "syntax.unexpected-indentation",
+          "Unexpected indentation. Missing parent statement or section."
+        )
       );
       advance(state);
       continue;
@@ -371,7 +434,11 @@ function parseStatementBlock(state, expectedLevel, context) {
 
     if (line.text === "then") {
       state.issues.push(
-        createSyntaxIssue(line.line, "`then` may only appear as its own line inside a policy block.")
+        createSyntaxIssue(
+          line.line,
+          "syntax.unexpected-then",
+          "`then` may only appear as its own line inside a policy block."
+        )
       );
       advance(state);
       continue;
@@ -380,7 +447,11 @@ function parseStatementBlock(state, expectedLevel, context) {
     if (line.text.startsWith("when ")) {
       if (context !== "process") {
         state.issues.push(
-          createSyntaxIssue(line.line, "`when` statements are only allowed in `process` blocks.")
+          createSyntaxIssue(
+            line.line,
+            "syntax.when-only-in-process",
+            "`when` statements are only allowed in `process` blocks."
+          )
         );
         advance(state);
         continue;
@@ -403,7 +474,11 @@ function parseStatementBlock(state, expectedLevel, context) {
     }
 
     state.issues.push(
-      createSyntaxIssue(line.line, `Unexpected statement \`${firstWord(line.text)}\` in ${context} block.`)
+      createSyntaxIssue(
+        line.line,
+        "syntax.unexpected-statement",
+        `Unexpected statement \`${firstWord(line.text)}\` in ${context} block.`
+      )
     );
     advance(state);
   }
@@ -423,7 +498,11 @@ function parseActionBlock(state, expectedLevel, context) {
 
     if (line.level > expectedLevel) {
       state.issues.push(
-        createSyntaxIssue(line.line, "Unexpected indentation. Missing parent statement or section.")
+        createSyntaxIssue(
+          line.line,
+          "syntax.unexpected-indentation",
+          "Unexpected indentation. Missing parent statement or section."
+        )
       );
       advance(state);
       continue;
@@ -436,7 +515,11 @@ function parseActionBlock(state, expectedLevel, context) {
     const action = parseActionStatement(state, line);
     if (!action) {
       state.issues.push(
-        createSyntaxIssue(line.line, `Expected an action statement in ${context} block.`)
+        createSyntaxIssue(
+          line.line,
+          "syntax.expected-action-statement",
+          `Expected an action statement in ${context} block.`
+        )
       );
       advance(state);
       continue;
@@ -455,7 +538,11 @@ function parseWhenStatement(state) {
 
   if (!match) {
     state.issues.push(
-      createSyntaxIssue(line.line, "Process `when` must declare a single event trigger like `lead.created`.")
+      createSyntaxIssue(
+        line.line,
+        "syntax.invalid-process-when",
+        "Process `when` must declare a single event trigger like `lead.created`."
+      )
     );
     return {
       type: "WhenNode",
@@ -477,7 +564,11 @@ function parseIfStatement(state, expectedLevel, context) {
 
   if (!match) {
     state.issues.push(
-      createSyntaxIssue(line.line, "`if` statements must use the form `if <condition> then`.")
+      createSyntaxIssue(
+        line.line,
+        "syntax.invalid-if-statement",
+        "`if` statements must use the form `if <condition> then`."
+      )
     );
     return {
       type: "IfNode",
@@ -499,7 +590,11 @@ function parseIfStatement(state, expectedLevel, context) {
 
     if (!elseIfMatch) {
       state.issues.push(
-        createSyntaxIssue(elseIfLine.line, "`else if` statements must use the form `else if <condition> then`.")
+        createSyntaxIssue(
+          elseIfLine.line,
+          "syntax.invalid-else-if-statement",
+          "`else if` statements must use the form `else if <condition> then`."
+        )
       );
       continue;
     }
@@ -535,7 +630,13 @@ function parseActionStatement(state, line) {
   if (line.text.startsWith("assign ")) {
     const match = line.text.match(/^assign ([A-Za-z_][A-Za-z0-9_.-]*) = (.+)$/);
     if (!match) {
-      state.issues.push(createSyntaxIssue(line.line, "`assign` must use the form `assign field = value`."));
+      state.issues.push(
+        createSyntaxIssue(
+          line.line,
+          "syntax.invalid-assign-statement",
+          "`assign` must use the form `assign field = value`."
+        )
+      );
       return createAction("AssignNode", { target: null, value: null, line: line.line });
     }
 
@@ -550,7 +651,11 @@ function parseActionStatement(state, line) {
     const match = line.text.match(/^transition ([A-Za-z_][A-Za-z0-9_.-]*) to (.+)$/);
     if (!match) {
       state.issues.push(
-        createSyntaxIssue(line.line, "`transition` must use the form `transition field to value`.")
+        createSyntaxIssue(
+          line.line,
+          "syntax.invalid-transition-statement",
+          "`transition` must use the form `transition field to value`."
+        )
       );
       return createAction("TransitionNode", { target: null, value: null, line: line.line });
     }
@@ -566,7 +671,11 @@ function parseActionStatement(state, line) {
     const match = line.text.match(/^notify ([A-Za-z_][A-Za-z0-9_.-]*) with "([^"]*)"$/);
     if (!match) {
       state.issues.push(
-        createSyntaxIssue(line.line, "`notify` must use the form `notify target with \"message\"`.")
+        createSyntaxIssue(
+          line.line,
+          "syntax.invalid-notify-statement",
+          "`notify` must use the form `notify target with \"message\"`."
+        )
       );
       return createAction("NotifyNode", { target: null, message: null, line: line.line });
     }
@@ -581,7 +690,13 @@ function parseActionStatement(state, line) {
   if (line.text.startsWith("create ")) {
     const match = line.text.match(/^create ([A-Za-z_][A-Za-z0-9_.-]*)$/);
     if (!match) {
-      state.issues.push(createSyntaxIssue(line.line, "`create` must reference a single entity identifier."));
+      state.issues.push(
+        createSyntaxIssue(
+          line.line,
+          "syntax.invalid-create-statement",
+          "`create` must reference a single entity identifier."
+        )
+      );
       return createAction("CreateNode", { entity: null, line: line.line });
     }
 
@@ -594,7 +709,13 @@ function parseActionStatement(state, line) {
   if (line.text.startsWith("update ")) {
     const match = line.text.match(/^update ([A-Za-z_][A-Za-z0-9_.-]*) = (.+)$/);
     if (!match) {
-      state.issues.push(createSyntaxIssue(line.line, "`update` must use the form `update field = value`."));
+      state.issues.push(
+        createSyntaxIssue(
+          line.line,
+          "syntax.invalid-update-statement",
+          "`update` must use the form `update field = value`."
+        )
+      );
       return createAction("UpdateNode", { target: null, value: null, line: line.line });
     }
 
@@ -609,7 +730,11 @@ function parseActionStatement(state, line) {
     const match = line.text.match(/^require ([A-Za-z_][A-Za-z0-9_.-]*)$/);
     if (!match) {
       state.issues.push(
-        createSyntaxIssue(line.line, "`require` must reference a single named requirement token.")
+        createSyntaxIssue(
+          line.line,
+          "syntax.invalid-require-statement",
+          "`require` must reference a single named requirement token."
+        )
       );
       return createAction("RequireNode", { requirement: null, line: line.line });
     }
@@ -659,7 +784,13 @@ function parseComparison(text, line, issues) {
   const match = text.match(/^(.*?)\s*(=|!=|<=|>=|<|>)\s*(.*?)$/);
 
   if (!match) {
-    issues.push(createSyntaxIssue(line, "Conditions must use a comparison operator."));
+    issues.push(
+      createSyntaxIssue(
+        line,
+        "syntax.invalid-condition",
+        "Conditions must use a comparison operator."
+      )
+    );
     return {
       type: "ComparisonConditionNode",
       left: null,

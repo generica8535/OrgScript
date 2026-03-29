@@ -6,11 +6,17 @@ const DEFAULT_COUNTS = {
   info: 0,
 };
 
+const SEVERITY_RANK = {
+  error: 0,
+  warning: 1,
+  info: 2,
+};
+
 function createValidateReport(filePath, result) {
-  const diagnostics = [
-    ...mapIssues(result.syntaxIssues || [], "syntax"),
-    ...mapIssues(result.semanticIssues || [], "semantic"),
-  ];
+  const diagnostics = sortDiagnostics([
+    ...mapIssues(filePath, result.syntaxIssues || [], "syntax"),
+    ...mapIssues(filePath, result.semanticIssues || [], "semantic"),
+  ]);
   const summary = createSummary(diagnostics, result.summary);
 
   return {
@@ -24,13 +30,16 @@ function createValidateReport(filePath, result) {
 }
 
 function createLintReport(filePath, findings) {
-  const diagnostics = findings.map((finding) => ({
-    source: "lint",
-    code: finding.code,
-    severity: finding.severity,
-    line: finding.line || 1,
-    message: finding.message,
-  }));
+  const diagnostics = sortDiagnostics(
+    findings.map((finding) =>
+      createDiagnostic("lint", filePath, {
+        code: finding.code,
+        severity: finding.severity,
+        line: finding.line || 1,
+        message: finding.message,
+      })
+    )
+  );
   const summary = createSummary(diagnostics);
 
   return {
@@ -43,72 +52,94 @@ function createLintReport(filePath, findings) {
   };
 }
 
+function createLintInvalidReport(filePath, result) {
+  const diagnostics = sortDiagnostics([
+    ...mapIssues(filePath, result.syntaxIssues || [], "syntax"),
+    ...mapIssues(filePath, result.semanticIssues || [], "semantic"),
+  ]);
+  const summary = createSummary(diagnostics, result.summary);
+
+  return {
+    command: "lint",
+    file: toDisplayPath(filePath),
+    ok: false,
+    clean: false,
+    inputValid: false,
+    summary,
+    diagnostics,
+  };
+}
+
+function createFormatCheckReport(filePath, result) {
+  const diagnostics = sortDiagnostics(
+    (result.diagnostics || []).map((diagnostic) =>
+      createDiagnostic("format", filePath, diagnostic)
+    )
+  );
+  const summary = createSummary(diagnostics);
+
+  return {
+    command: "format",
+    file: toDisplayPath(filePath),
+    ok: summary.error === 0,
+    canonical: summary.error === 0,
+    check: true,
+    mode: "check",
+    summary,
+    diagnostics,
+  };
+}
+
+function createFormatInvalidReport(filePath, result) {
+  const diagnostics = sortDiagnostics([
+    ...mapIssues(filePath, result.syntaxIssues || [], "syntax"),
+    ...mapIssues(filePath, result.semanticIssues || [], "semantic"),
+  ]);
+  const summary = createSummary(diagnostics, result.summary);
+
+  return {
+    command: "format",
+    file: toDisplayPath(filePath),
+    ok: false,
+    canonical: false,
+    check: true,
+    inputValid: false,
+    mode: "check",
+    summary,
+    diagnostics,
+  };
+}
+
 function createCheckReport(filePath, result) {
-  const validateDiagnostics = [
-    ...mapIssues(result.validate.syntaxIssues || [], "syntax"),
-    ...mapIssues(result.validate.semanticIssues || [], "semantic"),
-  ];
-  const lintDiagnostics = (result.lint.findings || []).map((finding) => ({
-    source: "lint",
-    code: finding.code,
-    severity: finding.severity,
-    line: finding.line || 1,
-    message: finding.message,
-  }));
-  const formatDiagnostics = result.format.requiresChanges
-    ? [
-        {
-          source: "format",
-          code: "format_check_failed",
-          severity: "error",
-          line: 1,
-          message: "Canonical formatting changes required.",
-        },
-      ]
-    : [];
+  const validate = createCheckValidateStage(filePath, result.validate);
+  const lint = createCheckLintStage(filePath, result.lint);
+  const format = createCheckFormatStage(filePath, result.format);
+  const diagnostics = sortDiagnostics([
+    ...validate.diagnostics,
+    ...lint.diagnostics,
+    ...format.diagnostics,
+  ]);
 
   return {
     command: "check",
     file: toDisplayPath(filePath),
     ok: result.ok,
-    summary: createSummary([
-      ...validateDiagnostics,
-      ...lintDiagnostics,
-      ...formatDiagnostics,
-    ]),
-    validate: {
-      ok: result.validate.ok,
-      valid: result.validate.ok,
-      skipped: false,
-      summary: createSummary(validateDiagnostics, result.validate.summary || {}),
-      diagnostics: validateDiagnostics,
-    },
-    lint: {
-      ok: result.lint.ok,
-      clean: result.lint.ok,
-      skipped: result.lint.skipped,
-      summary: createSummary(lintDiagnostics),
-      diagnostics: lintDiagnostics,
-    },
-    format: {
-      ok: result.format.ok,
-      canonical: result.format.ok,
-      skipped: result.format.skipped,
-      summary: createSummary(formatDiagnostics),
-      diagnostics: formatDiagnostics,
-    },
+    summary: createSummary(diagnostics),
+    diagnostics,
+    validate,
+    lint,
+    format,
   };
 }
 
 function createCliErrorReport(command, code, message, filePath) {
   const diagnostics = [
-    {
-      source: "cli",
+    createDiagnostic("cli", filePath, {
       code,
       severity: "error",
       line: 1,
       message,
-    },
+    }),
   ];
 
   return {
@@ -120,14 +151,103 @@ function createCliErrorReport(command, code, message, filePath) {
   };
 }
 
-function mapIssues(issues, source) {
-  return issues.map((issue) => ({
+function createDiagnostic(source, filePath, diagnostic) {
+  return {
     source,
-    code: issue.code || `${source}_error`,
-    severity: "error",
-    line: issue.line || 1,
-    message: issue.message,
-  }));
+    severity: diagnostic.severity || "error",
+    code: diagnostic.code || `${source}.unknown`,
+    file: toDisplayPath(filePath),
+    line: diagnostic.line || 1,
+    message: diagnostic.message,
+  };
+}
+
+function mapIssues(filePath, issues, source) {
+  return issues.map((issue) =>
+    createDiagnostic(source, filePath, {
+      code: issue.code || `${source}.unknown`,
+      severity: "error",
+      line: issue.line || 1,
+      message: issue.message,
+    })
+  );
+}
+
+function createCheckValidateStage(filePath, result) {
+  const diagnostics = sortDiagnostics([
+    ...mapIssues(filePath, result.syntaxIssues || [], "syntax"),
+    ...mapIssues(filePath, result.semanticIssues || [], "semantic"),
+  ]);
+
+  return {
+    ok: result.ok,
+    valid: result.ok,
+    skipped: false,
+    summary: createSummary(diagnostics, result.summary || {}),
+    diagnostics,
+  };
+}
+
+function createCheckLintStage(filePath, result) {
+  if (result.skipped) {
+    return {
+      ok: false,
+      clean: false,
+      skipped: true,
+      summary: createSummary([]),
+      diagnostics: [],
+    };
+  }
+
+  const diagnostics = sortDiagnostics(
+    (result.findings || []).map((finding) =>
+      createDiagnostic("lint", filePath, {
+        code: finding.code,
+        severity: finding.severity,
+        line: finding.line || 1,
+        message: finding.message,
+      })
+    )
+  );
+
+  return {
+    ok: result.ok,
+    clean: result.ok,
+    skipped: false,
+    summary: createSummary(diagnostics),
+    diagnostics,
+  };
+}
+
+function createCheckFormatStage(filePath, result) {
+  if (result.skipped) {
+    return {
+      ok: false,
+      canonical: false,
+      skipped: true,
+      summary: createSummary([]),
+      diagnostics: [],
+    };
+  }
+
+  const diagnostics = result.requiresChanges
+    ? [
+        createDiagnostic("format", filePath, {
+          code: "format.not-canonical",
+          severity: "error",
+          line: 1,
+          message: "Canonical formatting changes required.",
+        }),
+      ]
+    : [];
+
+  return {
+    ok: result.ok,
+    canonical: result.ok,
+    skipped: false,
+    summary: createSummary(diagnostics),
+    diagnostics,
+  };
 }
 
 function createSummary(diagnostics, extras = {}) {
@@ -148,6 +268,57 @@ function createSummary(diagnostics, extras = {}) {
   };
 }
 
+function sortDiagnostics(diagnostics) {
+  return [...diagnostics].sort((left, right) => {
+    const leftFile = left.file || "";
+    const rightFile = right.file || "";
+
+    if (leftFile !== rightFile) {
+      return leftFile.localeCompare(rightFile);
+    }
+
+    if ((left.line || 1) !== (right.line || 1)) {
+      return (left.line || 1) - (right.line || 1);
+    }
+
+    if (SEVERITY_RANK[left.severity] !== SEVERITY_RANK[right.severity]) {
+      return SEVERITY_RANK[left.severity] - SEVERITY_RANK[right.severity];
+    }
+
+    if (left.code !== right.code) {
+      return left.code.localeCompare(right.code);
+    }
+
+    return left.message.localeCompare(right.message);
+  });
+}
+
+function formatDiagnosticLine(diagnostic) {
+  return `  ${diagnostic.severity.toUpperCase()} ${diagnostic.code} ${diagnostic.file}:${diagnostic.line} ${diagnostic.message}`;
+}
+
+function renderCommandReport(title, filePath, report, options = {}) {
+  const lines = [`${title} ${toDisplayPath(filePath)}`];
+
+  lines.push(`  status: ${report.ok ? "ok" : "failed"}`);
+  lines.push(
+    `  summary: ${report.summary.error} error(s), ${report.summary.warning} warning(s), ${report.summary.info} info`
+  );
+
+  if (options.includeStats && report.summary.topLevelBlocks !== undefined) {
+    lines.push(
+      `  stats: ${report.summary.topLevelBlocks} top-level block(s), ${report.summary.statements} statement(s)`
+    );
+  }
+
+  for (const diagnostic of report.diagnostics) {
+    lines.push(formatDiagnosticLine(diagnostic));
+  }
+
+  lines.push(`Result: ${report.ok ? "PASS" : "FAIL"}`);
+  return lines;
+}
+
 function toDisplayPath(filePath) {
   if (!filePath) {
     return null;
@@ -160,6 +331,13 @@ function toDisplayPath(filePath) {
 module.exports = {
   createCheckReport,
   createCliErrorReport,
+  createFormatCheckReport,
+  createFormatInvalidReport,
+  createLintInvalidReport,
   createLintReport,
   createValidateReport,
+  formatDiagnosticLine,
+  renderCommandReport,
+  sortDiagnostics,
+  toDisplayPath,
 };

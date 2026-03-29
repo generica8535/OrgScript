@@ -1,5 +1,5 @@
-function createSyntaxIssue(line, message) {
-  return { line, message };
+function createSyntaxIssue(line, code, message) {
+  return { line, code, message };
 }
 
 function lex(source) {
@@ -12,7 +12,13 @@ function lex(source) {
     const lineNumber = index + 1;
 
     if (raw.includes("\t")) {
-      issues.push(createSyntaxIssue(lineNumber, "Tabs are not allowed. Use spaces for indentation."));
+      issues.push(
+        createSyntaxIssue(
+          lineNumber,
+          "syntax.tabs-not-allowed",
+          "Tabs are not allowed. Use spaces for indentation."
+        )
+      );
     }
 
     if (!raw.trim()) {
@@ -25,7 +31,13 @@ function lex(source) {
     }
 
     if (indent % 2 !== 0) {
-      issues.push(createSyntaxIssue(lineNumber, "Indentation must use multiples of two spaces."));
+      issues.push(
+        createSyntaxIssue(
+          lineNumber,
+          "syntax.invalid-indentation",
+          "Indentation must use multiples of two spaces."
+        )
+      );
     }
 
     lines.push({

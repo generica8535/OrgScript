@@ -54,6 +54,7 @@ scripts/
 src/
   ast.js
   cli.js
+  command-line.js
   export-json.js
   lexer.js
   parser.js

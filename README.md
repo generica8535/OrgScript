@@ -174,10 +174,12 @@ npm run demo:generate
 - AST-backed linting: `orgscript lint <file>`
 - Combined quality checks: `orgscript check <file>`
 - Machine-readable combined checks: `orgscript check <file> --json`
+- Machine-readable format checks: `orgscript format <file> --check --json`
 - Canonical JSON export: `orgscript export json <file>`
 - Markdown summary export: `orgscript export markdown <file>`
 - Mermaid export for `process` and `stateflow`: `orgscript export mermaid <file>`
 - Machine-readable diagnostics: `orgscript validate <file> --json`, `orgscript lint <file> --json`, `orgscript check <file> --json`
+- Stable diagnostic codes across syntax, semantic validation, lint, format, and CLI usage errors
 - Golden snapshot tests for AST, canonical model, and formatter output
 - Stable lint severities: `error`, `warning`, `info`
 - Canonical master spec: [`spec/language-spec.md`](spec/language-spec.md)
@@ -194,6 +196,7 @@ node ./bin/orgscript.js check ./examples/craft-business-lead-to-order.orgs
 node ./bin/orgscript.js check ./examples/craft-business-lead-to-order.orgs --json
 node ./bin/orgscript.js format ./examples/craft-business-lead-to-order.orgs
 node ./bin/orgscript.js format ./examples/craft-business-lead-to-order.orgs --check
+node ./bin/orgscript.js format ./examples/craft-business-lead-to-order.orgs --check --json
 node ./bin/orgscript.js lint ./tests/lint/process-missing-trigger.orgs
 node ./bin/orgscript.js lint ./tests/lint/process-missing-trigger.orgs --json
 node ./bin/orgscript.js export json ./examples/craft-business-lead-to-order.orgs
@@ -231,27 +234,36 @@ OrgScript exposes stable JSON diagnostics for CI, editors, AI systems, and downs
 }
 ```
 
-`lint --json` on a warning-only fixture:
+`lint --json` on an error-producing fixture:
 
 ```json
 {
   "command": "lint",
-  "file": "tests/lint/process-missing-trigger.orgs",
-  "ok": true,
-  "clean": true,
+  "file": "tests/lint/process-multiple-triggers.orgs",
+  "ok": false,
+  "clean": false,
   "summary": {
-    "diagnostics": 1,
-    "error": 0,
-    "warning": 1,
-    "info": 0
+    "diagnostics": 2,
+    "error": 1,
+    "warning": 0,
+    "info": 1
   },
   "diagnostics": [
     {
       "source": "lint",
-      "code": "process-missing-trigger",
-      "severity": "warning",
-      "line": 1,
-      "message": "Process `MissingTrigger` has no `when` trigger."
+      "severity": "error",
+      "code": "lint.process-multiple-triggers",
+      "file": "tests/lint/process-multiple-triggers.orgs",
+      "line": 5,
+      "message": "Process `MultipleTriggers` declares multiple `when` triggers."
+    },
+    {
+      "source": "lint",
+      "severity": "info",
+      "code": "lint.process-trigger-order",
+      "file": "tests/lint/process-multiple-triggers.orgs",
+      "line": 5,
+      "message": "Process `MultipleTriggers` declares a `when` trigger after operational statements."
     }
   ]
 }
@@ -311,6 +323,26 @@ OrgScript exposes stable JSON diagnostics for CI, editors, AI systems, and downs
 }
 ```
 
+`format --check --json` on a canonical file:
+
+```json
+{
+  "command": "format",
+  "file": "examples/order-approval.orgs",
+  "ok": true,
+  "canonical": true,
+  "check": true,
+  "mode": "check",
+  "summary": {
+    "diagnostics": 0,
+    "error": 0,
+    "warning": 0,
+    "info": 0
+  },
+  "diagnostics": []
+}
+```
+
 ## Guides
 
 - Human authoring guide: [`docs/orgscript-for-humans.md`](docs/orgscript-for-humans.md)
@@ -359,6 +391,7 @@ orgscript validate file.orgs
 orgscript validate file.orgs --json
 orgscript format file.orgs
 orgscript format file.orgs --check
+orgscript format file.orgs --check --json
 orgscript lint file.orgs
 orgscript lint file.orgs --json
 orgscript export json file.orgs

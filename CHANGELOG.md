@@ -17,6 +17,9 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 - Added `npm run demo:generate` plus a Mermaid demo package with generated Markdown and `.mmd` artifacts.
 - Added a canonical master language spec and lightweight governance guidance.
 - Added an example catalog and an initial VS Code syntax-highlighting scaffold.
+- Unified CLI diagnostics across `validate`, `lint`, `check`, and `format --check`.
+- Added stable diagnostic code namespaces for syntax, semantic validation, lint, format, and CLI usage errors.
+- Added `format --check --json` and documented JSON diagnostics with real examples.
 
 ## [0.3.0] - 2026-03-29
 

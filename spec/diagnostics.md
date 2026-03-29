@@ -1,19 +1,82 @@
 # Diagnostics Contract
 
-OrgScript diagnostics are designed for both humans and machines.
+OrgScript diagnostics are designed to be stable for humans, CI, editors, AI systems, and downstream tooling.
 
-Human-readable output is intended for direct CLI usage.
-Machine-readable diagnostics are intended for CI, editors, AI systems, and downstream tooling.
-
-## Supported commands
+The contract below covers:
 
 - `orgscript validate <file> --json`
 - `orgscript lint <file> --json`
 - `orgscript check <file> --json`
+- `orgscript format <file> --check --json`
 
-## Output shape
+## Severity model
 
-`validate` on `examples/craft-business-lead-to-order.orgs`:
+OrgScript uses exactly three severities:
+
+- `error`
+- `warning`
+- `info`
+
+Severity meanings:
+
+- `error`: invalid input or blocking quality issue
+- `warning`: non-blocking but notable issue
+- `info`: advisory finding
+
+## Diagnostic object shape
+
+Each diagnostic object uses the same core fields:
+
+```json
+{
+  "source": "lint",
+  "severity": "error",
+  "code": "lint.process-multiple-triggers",
+  "file": "tests/lint/process-multiple-triggers.orgs",
+  "line": 5,
+  "message": "Process `MultipleTriggers` declares multiple `when` triggers."
+}
+```
+
+Fields:
+
+- `source`: `cli`, `syntax`, `semantic`, `lint`, or `format`
+- `severity`: `error`, `warning`, or `info`
+- `code`: stable machine-readable identifier
+- `file`: repository-relative path when available
+- `line`: 1-based line number
+- `message`: human-readable explanation
+
+## Code namespaces
+
+Diagnostic codes are stable and namespaced by origin:
+
+- `cli.*`
+- `syntax.*`
+- `semantic.*`
+- `lint.*`
+- `format.*`
+
+Examples:
+
+- `cli.file-not-found`
+- `syntax.unknown-top-level-block`
+- `syntax.invalid-indentation`
+- `semantic.transition-target-undeclared`
+- `lint.process-multiple-triggers`
+- `format.not-canonical`
+
+## Top-level JSON structure
+
+All supported JSON commands expose:
+
+- `command`
+- `file`
+- `ok`
+- `summary`
+- `diagnostics`
+
+### `validate --json`
 
 ```json
 {
@@ -33,38 +96,51 @@ Machine-readable diagnostics are intended for CI, editors, AI systems, and downs
 }
 ```
 
-`lint` on `tests/lint/process-missing-trigger.orgs`:
+### `lint --json`
 
 ```json
 {
   "command": "lint",
-  "file": "tests/lint/process-missing-trigger.orgs",
-  "ok": true,
-  "clean": true,
+  "file": "tests/lint/process-multiple-triggers.orgs",
+  "ok": false,
+  "clean": false,
   "summary": {
-    "diagnostics": 1,
-    "error": 0,
-    "warning": 1,
-    "info": 0
+    "diagnostics": 2,
+    "error": 1,
+    "warning": 0,
+    "info": 1
   },
   "diagnostics": [
     {
       "source": "lint",
-      "code": "process-missing-trigger",
-      "severity": "warning",
-      "line": 1,
-      "message": "Process `MissingTrigger` has no `when` trigger."
+      "severity": "error",
+      "code": "lint.process-multiple-triggers",
+      "file": "tests/lint/process-multiple-triggers.orgs",
+      "line": 5,
+      "message": "Process `MultipleTriggers` declares multiple `when` triggers."
+    },
+    {
+      "source": "lint",
+      "severity": "info",
+      "code": "lint.process-trigger-order",
+      "file": "tests/lint/process-multiple-triggers.orgs",
+      "line": 5,
+      "message": "Process `MultipleTriggers` declares a `when` trigger after operational statements."
     }
   ]
 }
 ```
 
-`check` on `examples/craft-business-lead-to-order.orgs`:
+If `lint` cannot run because the file is syntactically or semantically invalid, the response stays `command: "lint"` and returns syntax or semantic diagnostics with `inputValid: false`.
+
+### `check --json`
+
+`check` combines validation, linting, and canonical format checking.
 
 ```json
 {
   "command": "check",
-  "file": "examples/craft-business-lead-to-order.orgs",
+  "file": "examples/order-approval.orgs",
   "ok": true,
   "summary": {
     "diagnostics": 0,
@@ -72,13 +148,14 @@ Machine-readable diagnostics are intended for CI, editors, AI systems, and downs
     "warning": 0,
     "info": 0
   },
+  "diagnostics": [],
   "validate": {
     "ok": true,
     "valid": true,
     "skipped": false,
     "summary": {
-      "topLevelBlocks": 4,
-      "statements": 47,
+      "topLevelBlocks": 2,
+      "statements": 15,
       "diagnostics": 0,
       "error": 0,
       "warning": 0,
@@ -113,17 +190,66 @@ Machine-readable diagnostics are intended for CI, editors, AI systems, and downs
 }
 ```
 
-## Diagnostic fields
+`check` also exposes a flattened top-level `diagnostics` array in addition to the stage-local arrays.
 
-Each diagnostic entry contains:
+### `format --check --json`
 
-- `source`: `cli`, `syntax`, `semantic`, `lint`, or `format`
-- `code`: stable machine-readable identifier when available
-- `severity`: `error`, `warning`, or `info`
-- `line`: 1-based line number
-- `message`: human-readable explanation
+```json
+{
+  "command": "format",
+  "file": "examples/order-approval.orgs",
+  "ok": true,
+  "canonical": true,
+  "check": true,
+  "mode": "check",
+  "summary": {
+    "diagnostics": 0,
+    "error": 0,
+    "warning": 0,
+    "info": 0
+  },
+  "diagnostics": []
+}
+```
 
-`check` embeds stage-local diagnostics under `validate`, `lint`, and `format`. Stages that could not run because validation failed are marked with `skipped: true`.
+If canonical formatting differs, `format --check --json` returns an `error` diagnostic with code `format.not-canonical`.
+
+If the input file is invalid, the response stays `command: "format"` and returns syntax or semantic diagnostics with `inputValid: false`.
+
+## Text output contract
+
+Human-readable CLI output is deterministic and follows the same ordering principles:
+
+- heading first
+- status second
+- summary third
+- diagnostics sorted deterministically
+- summary result last when applicable
+
+Diagnostic lines use this order:
+
+- severity
+- code
+- file
+- line
+- message
+
+Example:
+
+```text
+LINT tests/lint/process-multiple-triggers.orgs
+  status: failed
+  summary: 1 error(s), 0 warning(s), 1 info
+  ERROR lint.process-multiple-triggers tests/lint/process-multiple-triggers.orgs:5 Process `MultipleTriggers` declares multiple `when` triggers.
+  INFO lint.process-trigger-order tests/lint/process-multiple-triggers.orgs:5 Process `MultipleTriggers` declares a `when` trigger after operational statements.
+Result: FAIL
+```
+
+`check` uses explicit stage lines:
+
+- `validate: ok|failed`
+- `lint: ok|failed|skipped`
+- `format: ok|failed|skipped`
 
 ## Exit codes
 
@@ -134,12 +260,15 @@ Each diagnostic entry contains:
 
 ### `lint`
 
-- `0`: findings contain only `warning` and `info`, or no findings exist
-- `1`: findings contain at least one `error`, or CLI usage failed
-
-Warnings are intentionally non-failing so OrgScript linting can be used as advisory tooling in CI and editor workflows.
+- `0`: only `warning` or `info` findings, or no findings
+- `1`: at least one `error`, invalid input, or CLI usage failed
 
 ### `check`
 
-- `0`: validation passed, lint contains no `error`, and formatting is canonical
-- `1`: validation failed, lint contains at least one `error`, formatting is non-canonical, or CLI usage failed
+- `0`: validation passed, lint has no `error`, and formatting is canonical
+- `1`: validation failed, lint has at least one `error`, formatting is non-canonical, or CLI usage failed
+
+### `format --check`
+
+- `0`: file is canonically formatted
+- `1`: canonical formatting differs, input is invalid, or CLI usage failed

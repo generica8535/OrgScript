@@ -104,11 +104,17 @@ function testInvalidFixtures() {
       throw new Error(`Expected invalid fixture but got success for ${entry.file}`);
     }
 
-    const messages = [...result.syntaxIssues, ...result.semanticIssues].map((issue) => issue.message);
+    const issues = [...result.syntaxIssues, ...result.semanticIssues];
+    const messages = issues.map((issue) => issue.message);
+    const codes = issues.map((issue) => issue.code);
 
     for (const expected of entry.expectedMessages) {
       const found = messages.some((message) => message.includes(expected));
       assert.ok(found, `Expected error containing "${expected}" in ${entry.file}`);
+    }
+
+    for (const expectedCode of entry.expectedCodes || []) {
+      assert.ok(codes.includes(expectedCode), `Expected error code "${expectedCode}" in ${entry.file}`);
     }
   }
 }
@@ -199,11 +205,17 @@ function testLintFixtures() {
 
     const reportLines = renderLintReport(entry.file, findings);
     if (findings.length === 0) {
-      assert.strictEqual(reportLines.length, 1, `Expected single-line clean report for ${entry.file}`);
+      assert.strictEqual(reportLines.length, 3, `Expected stable clean report for ${entry.file}`);
+      assert.strictEqual(reportLines[0], `LINT ${entry.file}`, `Unexpected lint heading for ${entry.file}`);
     } else {
       assert.strictEqual(
         reportLines[1],
-        `  summary: ${summary.error} error(s), ${summary.warning} warning(s), ${summary.info} info finding(s)`,
+        `  status: ${summary.error > 0 ? "failed" : "ok"}`,
+        `Unexpected lint status line for ${entry.file}`
+      );
+      assert.strictEqual(
+        reportLines[2],
+        `  summary: ${summary.error} error(s), ${summary.warning} warning(s), ${summary.info} info`,
         `Unexpected lint summary line for ${entry.file}`
       );
     }
@@ -224,6 +236,8 @@ function testCliDiagnosticsAndExitCodes() {
   assert.strictEqual(validateOkPayload.command, "validate");
   assert.strictEqual(validateOkPayload.valid, true);
   assert.strictEqual(validateOkPayload.summary.error, 0);
+  assert.ok(Array.isArray(validateOkPayload.diagnostics));
+  assertDiagnosticsShape(validateOkPayload.diagnostics);
 
   const validateInvalid = runCli([
     cliPath,
@@ -237,6 +251,14 @@ function testCliDiagnosticsAndExitCodes() {
   assert.strictEqual(validateInvalidPayload.valid, false);
   assert.ok(validateInvalidPayload.summary.error > 0);
   assert.ok(validateInvalidPayload.diagnostics.length > 0);
+  assert.strictEqual(validateInvalidPayload.diagnostics[0].severity, "error");
+  assert.ok(validateInvalidPayload.diagnostics[0].code.startsWith("syntax."));
+  assert.strictEqual(
+    validateInvalidPayload.diagnostics[0].file,
+    "tests/invalid/unknown-top-level.orgs"
+  );
+  assert.ok(typeof validateInvalidPayload.diagnostics[0].line === "number");
+  assertDiagnosticsShape(validateInvalidPayload.diagnostics);
 
   const lintWarning = runCli([
     cliPath,
@@ -250,6 +272,9 @@ function testCliDiagnosticsAndExitCodes() {
   assert.strictEqual(lintWarningPayload.clean, true);
   assert.ok(lintWarningPayload.summary.warning > 0);
   assert.strictEqual(lintWarningPayload.summary.error, 0);
+  assert.strictEqual(lintWarningPayload.diagnostics[0].code, "lint.process-missing-trigger");
+  assert.strictEqual(lintWarningPayload.diagnostics[0].file, "tests/lint/process-missing-trigger.orgs");
+  assertDiagnosticsShape(lintWarningPayload.diagnostics);
 
   const lintError = runCli([
     cliPath,
@@ -262,6 +287,8 @@ function testCliDiagnosticsAndExitCodes() {
   assert.strictEqual(lintErrorPayload.command, "lint");
   assert.strictEqual(lintErrorPayload.clean, false);
   assert.ok(lintErrorPayload.summary.error > 0);
+  assert.strictEqual(lintErrorPayload.diagnostics[0].code, "lint.process-multiple-triggers");
+  assertDiagnosticsShape(lintErrorPayload.diagnostics);
 
   const checkOk = runCli([
     cliPath,
@@ -276,6 +303,8 @@ function testCliDiagnosticsAndExitCodes() {
   assert.strictEqual(checkOkPayload.validate.valid, true);
   assert.strictEqual(checkOkPayload.lint.clean, true);
   assert.strictEqual(checkOkPayload.format.canonical, true);
+  assert.ok(Array.isArray(checkOkPayload.diagnostics));
+  assertDiagnosticsShape(checkOkPayload.diagnostics);
 
   const checkLintError = runCli([
     cliPath,
@@ -288,6 +317,13 @@ function testCliDiagnosticsAndExitCodes() {
   assert.strictEqual(checkLintErrorPayload.command, "check");
   assert.strictEqual(checkLintErrorPayload.ok, false);
   assert.ok(checkLintErrorPayload.lint.summary.error > 0);
+  assert.ok(
+    checkLintErrorPayload.diagnostics.some(
+      (diagnostic) => diagnostic.code === "lint.process-multiple-triggers"
+    ),
+    "Expected check diagnostics to include lint.process-multiple-triggers"
+  );
+  assertDiagnosticsShape(checkLintErrorPayload.diagnostics);
 
   const checkInvalid = runCli([
     cliPath,
@@ -302,6 +338,8 @@ function testCliDiagnosticsAndExitCodes() {
   assert.strictEqual(checkInvalidPayload.validate.valid, false);
   assert.strictEqual(checkInvalidPayload.lint.skipped, true);
   assert.strictEqual(checkInvalidPayload.format.skipped, true);
+  assert.ok(checkInvalidPayload.diagnostics[0].code.startsWith("syntax."));
+  assertDiagnosticsShape(checkInvalidPayload.diagnostics);
 
   const exportJson = runCli([
     cliPath,
@@ -382,9 +420,27 @@ function testFormatCheckMode() {
   ]);
   assert.strictEqual(canonicalCheck.status, 0, "Expected format --check to pass for canonical file");
   assert.ok(
-    canonicalCheck.stdout.includes("Formatting check passed"),
-    "Expected format --check success message"
+    canonicalCheck.stdout.includes("FORMAT examples/craft-business-lead-to-order.orgs"),
+    "Expected format --check heading"
   );
+  assert.ok(
+    canonicalCheck.stdout.includes("  status: ok"),
+    "Expected format --check success status"
+  );
+
+  const canonicalCheckJson = runCli([
+    cliPath,
+    "format",
+    "./examples/craft-business-lead-to-order.orgs",
+    "--check",
+    "--json",
+  ]);
+  assert.strictEqual(canonicalCheckJson.status, 0, "Expected format --check --json to pass");
+  const canonicalCheckJsonPayload = JSON.parse(canonicalCheckJson.stdout);
+  assert.strictEqual(canonicalCheckJsonPayload.command, "format");
+  assert.strictEqual(canonicalCheckJsonPayload.canonical, true);
+  assert.ok(Array.isArray(canonicalCheckJsonPayload.diagnostics));
+  assertDiagnosticsShape(canonicalCheckJsonPayload.diagnostics);
 
   const nonCanonicalPath = path.join(repoRoot, "tests", ".tmp-format-noncanonical.orgs");
   const nonCanonicalSource = canonicalSource.replace("\n\n  when lead.created", "\n  when lead.created");
@@ -403,14 +459,28 @@ function testFormatCheckMode() {
       "Expected format --check to fail for non-canonical file"
     );
     assert.ok(
-      nonCanonicalCheck.stderr.includes("Formatting changes required"),
-      "Expected format --check failure message"
+      nonCanonicalCheck.stderr.includes("format.not-canonical"),
+      "Expected format --check failure code"
     );
     assert.strictEqual(
       fs.readFileSync(nonCanonicalPath, "utf8"),
       nonCanonicalSource,
       "Expected format --check to leave the file unchanged"
     );
+
+    const nonCanonicalCheckJson = runCli([
+      cliPath,
+      "format",
+      "./tests/.tmp-format-noncanonical.orgs",
+      "--check",
+      "--json",
+    ]);
+    assert.strictEqual(nonCanonicalCheckJson.status, 1, "Expected format --check --json to fail");
+    const nonCanonicalCheckJsonPayload = JSON.parse(nonCanonicalCheckJson.stdout);
+    assert.strictEqual(nonCanonicalCheckJsonPayload.command, "format");
+    assert.strictEqual(nonCanonicalCheckJsonPayload.canonical, false);
+    assert.strictEqual(nonCanonicalCheckJsonPayload.diagnostics[0].code, "format.not-canonical");
+    assertDiagnosticsShape(nonCanonicalCheckJsonPayload.diagnostics);
   } finally {
     if (fs.existsSync(nonCanonicalPath)) {
       fs.unlinkSync(nonCanonicalPath);
@@ -425,9 +495,23 @@ function testFormatCheckMode() {
   ]);
   assert.strictEqual(invalidCheck.status, 1, "Expected format --check to fail for invalid file");
   assert.ok(
-    invalidCheck.stderr.includes("Cannot format invalid OrgScript"),
-    "Expected invalid format --check message"
+    invalidCheck.stderr.includes("FORMAT tests/invalid/unknown-top-level.orgs"),
+    "Expected invalid format --check heading"
   );
+
+  const invalidCheckJson = runCli([
+    cliPath,
+    "format",
+    "./tests/invalid/unknown-top-level.orgs",
+    "--check",
+    "--json",
+  ]);
+  assert.strictEqual(invalidCheckJson.status, 1, "Expected invalid format --check --json to fail");
+  const invalidCheckJsonPayload = JSON.parse(invalidCheckJson.stdout);
+  assert.strictEqual(invalidCheckJsonPayload.command, "format");
+  assert.strictEqual(invalidCheckJsonPayload.canonical, false);
+  assert.ok(invalidCheckJsonPayload.diagnostics[0].code.startsWith("syntax."));
+  assertDiagnosticsShape(invalidCheckJsonPayload.diagnostics);
 }
 
 function testCheckCommand() {
@@ -601,6 +685,16 @@ function runCli(args) {
   }
 
   return result;
+}
+
+function assertDiagnosticsShape(diagnostics) {
+  for (const diagnostic of diagnostics) {
+    assert.ok(typeof diagnostic.severity === "string", "Expected diagnostic severity");
+    assert.ok(typeof diagnostic.code === "string", "Expected diagnostic code");
+    assert.ok(typeof diagnostic.file === "string", "Expected diagnostic file");
+    assert.ok(typeof diagnostic.line === "number", "Expected diagnostic line");
+    assert.ok(typeof diagnostic.message === "string", "Expected diagnostic message");
+  }
 }
 
 function normalizeAst(ast) {

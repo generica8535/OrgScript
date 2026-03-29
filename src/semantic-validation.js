@@ -1,3 +1,7 @@
+function createSemanticIssue(line, code, message) {
+  return { line, code, message };
+}
+
 function validateDocument(ast) {
   const issues = [];
   const seenTopLevel = new Map();
@@ -5,10 +9,13 @@ function validateDocument(ast) {
   for (const node of ast.body) {
     const key = `${node.type}:${node.name}`;
     if (seenTopLevel.has(key)) {
-      issues.push({
-        line: 1,
-        message: `Duplicate top-level ${node.type} name \`${node.name}\`.`,
-      });
+      issues.push(
+        createSemanticIssue(
+          1,
+          "semantic.duplicate-top-level-name",
+          `Duplicate top-level ${node.type} name \`${node.name}\`.`
+        )
+      );
     } else {
       seenTopLevel.set(key, true);
     }
@@ -22,10 +29,13 @@ function validateDocument(ast) {
 function validateNode(node, issues) {
   if (node.type === "ProcessNode" || node.type === "RuleNode" || node.type === "EventNode") {
     if (!node.body || node.body.length === 0) {
-      issues.push({
-        line: 1,
-        message: `${node.type.replace("Node", "")} \`${node.name}\` must not be empty.`,
-      });
+      issues.push(
+        createSemanticIssue(
+          1,
+          "semantic.empty-block",
+          `${node.type.replace("Node", "")} \`${node.name}\` must not be empty.`
+        )
+      );
     }
 
     validateStatements(node.body || [], issues);
@@ -39,18 +49,24 @@ function validateNode(node, issues) {
 
   if (node.type === "PolicyNode") {
     if (!node.clauses || node.clauses.length === 0) {
-      issues.push({
-        line: 1,
-        message: `Policy \`${node.name}\` must contain at least one clause.`,
-      });
+      issues.push(
+        createSemanticIssue(
+          1,
+          "semantic.empty-policy",
+          `Policy \`${node.name}\` must contain at least one clause.`
+        )
+      );
     }
 
     for (const clause of node.clauses || []) {
       if (!clause.body || clause.body.length === 0) {
-        issues.push({
-          line: clause.line,
-          message: "Policy clauses must contain at least one action in their `then` block.",
-        });
+        issues.push(
+          createSemanticIssue(
+            clause.line,
+            "semantic.empty-policy-then",
+            "Policy clauses must contain at least one action in their `then` block."
+          )
+        );
       }
       validateActionStatements(clause.body || [], issues);
     }
@@ -59,39 +75,51 @@ function validateNode(node, issues) {
 
   if (node.type === "RoleNode") {
     if ((node.can || []).length === 0 && (node.cannot || []).length === 0) {
-      issues.push({
-        line: 1,
-        message: `Role \`${node.name}\` must define at least one permission.`,
-      });
+      issues.push(
+        createSemanticIssue(
+          1,
+          "semantic.empty-role",
+          `Role \`${node.name}\` must define at least one permission.`
+        )
+      );
     }
     return;
   }
 
   if (node.type === "MetricNode") {
     if (!node.formula || !node.owner || !node.target) {
-      issues.push({
-        line: 1,
-        message: `Metric \`${node.name}\` must define formula, owner, and target.`,
-      });
+      issues.push(
+        createSemanticIssue(
+          1,
+          "semantic.incomplete-metric",
+          `Metric \`${node.name}\` must define formula, owner, and target.`
+        )
+      );
     }
   }
 }
 
 function validateStateflow(node, issues) {
   if ((node.states || []).length === 0) {
-    issues.push({
-      line: 1,
-      message: `Stateflow \`${node.name}\` must define at least one state.`,
-    });
+    issues.push(
+      createSemanticIssue(
+        1,
+        "semantic.empty-stateflow",
+        `Stateflow \`${node.name}\` must define at least one state.`
+      )
+    );
   }
 
   const stateNames = new Set();
   for (const state of node.states || []) {
     if (stateNames.has(state.value)) {
-      issues.push({
-        line: state.line,
-        message: `Duplicate state \`${state.value}\` in stateflow \`${node.name}\`.`,
-      });
+      issues.push(
+        createSemanticIssue(
+          state.line,
+          "semantic.duplicate-state",
+          `Duplicate state \`${state.value}\` in stateflow \`${node.name}\`.`
+        )
+      );
     }
     stateNames.add(state.value);
   }
@@ -99,25 +127,34 @@ function validateStateflow(node, issues) {
   const transitionKeys = new Set();
   for (const edge of node.transitions || []) {
     if (!stateNames.has(edge.from)) {
-      issues.push({
-        line: edge.line,
-        message: `Transition source \`${edge.from}\` is not declared in stateflow \`${node.name}\`.`,
-      });
+      issues.push(
+        createSemanticIssue(
+          edge.line,
+          "semantic.transition-source-undeclared",
+          `Transition source \`${edge.from}\` is not declared in stateflow \`${node.name}\`.`
+        )
+      );
     }
 
     if (!stateNames.has(edge.to)) {
-      issues.push({
-        line: edge.line,
-        message: `Transition target \`${edge.to}\` is not declared in stateflow \`${node.name}\`.`,
-      });
+      issues.push(
+        createSemanticIssue(
+          edge.line,
+          "semantic.transition-target-undeclared",
+          `Transition target \`${edge.to}\` is not declared in stateflow \`${node.name}\`.`
+        )
+      );
     }
 
     const key = `${edge.from}->${edge.to}`;
     if (transitionKeys.has(key)) {
-      issues.push({
-        line: edge.line,
-        message: `Duplicate transition \`${key}\` in stateflow \`${node.name}\`.`,
-      });
+      issues.push(
+        createSemanticIssue(
+          edge.line,
+          "semantic.duplicate-transition",
+          `Duplicate transition \`${key}\` in stateflow \`${node.name}\`.`
+        )
+      );
     }
     transitionKeys.add(key);
   }
@@ -130,30 +167,39 @@ function validateStatements(statements, issues) {
     }
 
     if (!statement.then || statement.then.length === 0) {
-      issues.push({
-        line: statement.line,
-        message: "`if` statements must contain at least one statement in their `then` block.",
-      });
+      issues.push(
+        createSemanticIssue(
+          statement.line,
+          "semantic.empty-if-then",
+          "`if` statements must contain at least one statement in their `then` block."
+        )
+      );
     }
 
     validateStatements(statement.then || [], issues);
 
     for (const branch of statement.elseIf || []) {
       if (!branch.then || branch.then.length === 0) {
-        issues.push({
-          line: branch.line,
-          message: "`else if` statements must contain at least one statement in their `then` block.",
-        });
+        issues.push(
+          createSemanticIssue(
+            branch.line,
+            "semantic.empty-else-if-then",
+            "`else if` statements must contain at least one statement in their `then` block."
+          )
+        );
       }
       validateStatements(branch.then || [], issues);
     }
 
     if (statement.else) {
       if (!statement.else.body || statement.else.body.length === 0) {
-        issues.push({
-          line: statement.else.line,
-          message: "`else` blocks must contain at least one statement.",
-        });
+        issues.push(
+          createSemanticIssue(
+            statement.else.line,
+            "semantic.empty-else",
+            "`else` blocks must contain at least one statement."
+          )
+        );
       }
       validateStatements(statement.else.body || [], issues);
     }
@@ -163,10 +209,9 @@ function validateStatements(statements, issues) {
 function validateActionStatements(statements, issues) {
   for (const statement of statements) {
     if (!statement || !statement.type) {
-      issues.push({
-        line: 1,
-        message: "Invalid action statement.",
-      });
+      issues.push(
+        createSemanticIssue(1, "semantic.invalid-action-statement", "Invalid action statement.")
+      );
     }
   }
 }
