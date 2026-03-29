@@ -28,6 +28,13 @@ Check new ideas against these questions:
 - Build parser test cases and fixtures
 - Contribute localization design notes without changing the English core
 
+Starter issue drafts for public contributors live in `docs/issues/contributors/`.
+
+When opening GitHub issues, prefer using:
+
+- `good first issue` for clearly bounded beginner-friendly work
+- `help wanted` for tasks where outside contributions are actively welcome
+
 ## First implementation targets
 
 - `orgscript validate`
