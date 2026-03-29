@@ -37,13 +37,20 @@
 - Improve consistency of human-readable CLI diagnostics
 - Add an initial VS Code syntax highlighting scaffold
 
+## v0.5
+
+- Improve VS Code syntax highlighting and local testing flow
+- Add a visual source-to-artifact showcase in the README
+- Curate the example catalog into `simple`, `realistic`, and `advanced`
+- Polish diagnostics UX and `check` output
+- Add lightweight language evolution and compatibility notes
+
 ## Unreleased
 
-- Open the v0.4.0 developer-experience milestone
-- Prepare issue drafts for formatter checks, diagnostics docs, combined quality checks, diagnostics consistency, and editor support
-- Publish the canonical language spec and governance notes
-- Add the first editor integration scaffold for VS Code
-- Expand diagnostics guidance and example indexing for contributors
+- Open the v0.5.0 adoption, editor, and polish milestone
+- Strengthen the repo front door and demo story
+- Improve example navigation and onboarding paths
+- Refine editor and diagnostics polish without widening the language core
 
 ## Later
 

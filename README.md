@@ -143,6 +143,7 @@ npm run demo:generate
 - [`docs/orgscript-for-humans.md`](docs/orgscript-for-humans.md)
 - [`docs/orgscript-for-ai.md`](docs/orgscript-for-ai.md)
 - [`docs/roadmaps/v0.4.0.md`](docs/roadmaps/v0.4.0.md)
+- [`docs/roadmaps/v0.5.0.md`](docs/roadmaps/v0.5.0.md)
 - [`docs/repository-structure.md`](docs/repository-structure.md)
 - [`docs/syntax.md`](docs/syntax.md)
 - [`docs/semantics.md`](docs/semantics.md)
@@ -382,7 +383,7 @@ See [`editors/vscode/README.md`](editors/vscode/README.md) for local installatio
 4. Extend editor support beyond the initial VS Code syntax-highlighting scaffold.
 5. Add additional downstream exporters and documentation views.
 
-See [`docs/roadmaps/v0.4.0.md`](docs/roadmaps/v0.4.0.md) for the current milestone plan.
+See [`docs/roadmaps/v0.5.0.md`](docs/roadmaps/v0.5.0.md) for the current milestone plan.
 
 ## CLI
 

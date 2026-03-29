@@ -6,6 +6,8 @@ These labels provide a small, stable vocabulary for OrgScript issue triage and m
 
 - `v0.4.0`
   - work explicitly planned for the v0.4.0 milestone
+- `v0.5.0`
+  - work explicitly planned for the v0.5.0 milestone
 
 ## Focus labels
 
@@ -23,6 +25,8 @@ These labels provide a small, stable vocabulary for OrgScript issue triage and m
   - README, guides, examples, or reference docs
 - `quality`
   - combined checks, CI paths, or release-hardening work
+- `governance`
+  - language evolution, compatibility, and change-management guidance
 
 ## Contribution labels
 
