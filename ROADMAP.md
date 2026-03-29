@@ -62,6 +62,15 @@ Theme: **Packaging, Distribution, and Trust**
 - **Documentation Site**: Automated static documentation on GitHub Pages.
 - **Trust & Showcase**: Complex business logic scenarios and integration examples.
 
+## v0.8 (Completed)
+
+Theme: **Analysis, Integrations, and AI-Ready Interfaces**
+
+- **Deterministic Analysis**: New `orgscript analyze` command for structural metrics.
+- **AI-Ready Context**: Stable context export format for LLM workflows.
+- **Tooling Hooks**: Recipes for CI/CD and pre-commit integrations.
+- **Docs site upgrade**: Improved site-site navigation and showcase grouping.
+
 ## Later
 
 - Ecosystem integrations

@@ -29,6 +29,13 @@ const demos = [
       "A multi-role hiring process including GDPR policies, manager permissions, and conditional rejection branches.",
   },
   {
+    slug: "incident-escalation",
+    title: "Incident Escalation SLA",
+    source: path.join(repoRoot, "examples", "incident-escalation.orgs"),
+    description:
+      "Operational incident handling with time-based escalation policies and on-call role definitions.",
+  },
+  {
     slug: "lead-qualification",
     title: "Lead qualification process",
     source: path.join(repoRoot, "examples", "lead-qualification.orgs"),

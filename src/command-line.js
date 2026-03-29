@@ -19,6 +19,8 @@ const { toHtmlDocumentation } = require("./export-html");
 const { formatDocument } = require("./formatter");
 const { lintDocument, summarizeFindings } = require("./linter");
 const { buildModel, validateFile } = require("./validate");
+const { analyzeDocument, renderTextAnalysis } = require("./analyze");
+const { toAiContext } = require("./export-context");
 
 function printUsage() {
   console.log(`OrgScript CLI v${require("../package.json").version}
@@ -173,6 +175,27 @@ function run(args) {
     }
   }
 
+  if (command === "export" && maybeSubcommand === "context") {
+    const absolutePath = resolveFile("export", maybeFile);
+    const result = buildModel(absolutePath);
+
+    // AI context includes findings/diagnostics
+    const findings = result.ok ? lintDocument(result.ast) : [];
+    const validateReport = createValidateReport(absolutePath, result);
+    
+    // We package context even if not perfectly valid, so AI can help fix.
+    // However, if we can't parse, we can only report diagnostics.
+    if (!result.ok) {
+        console.log(JSON.stringify(toAiContext({ version: "0.2", body: [] }, validateReport.diagnostics), null, 2));
+        process.exit(1);
+    }
+
+    const model = toCanonicalModel(result.ast);
+    const context = toAiContext(model, validateReport.diagnostics.concat(findings));
+    console.log(JSON.stringify(context, null, 2));
+    process.exit(0);
+  }
+
   if (command === "format") {
     const absolutePath = resolveFile("format", maybeSubcommand, options.json);
 
@@ -279,6 +302,34 @@ function run(args) {
     }
 
     console.log(reportLines);
+    process.exit(0);
+  }
+
+  if (command === "analyze") {
+    const absolutePath = resolveFile("analyze", maybeSubcommand, options.json);
+    const result = buildModel(absolutePath);
+
+    if (!result.ok) {
+      printDiagnostics(
+        `ANALYZE ${toDisplayPath(absolutePath)}`,
+        createValidateReport(absolutePath, result).diagnostics
+      );
+      process.exit(1);
+    }
+
+    const model = toCanonicalModel(result.ast);
+    const analysis = analyzeDocument(model);
+
+    if (options.json) {
+      console.log(JSON.stringify({
+        command: "analyze",
+        file: toDisplayPath(absolutePath),
+        analysis
+      }, null, 2));
+      process.exit(0);
+    }
+
+    console.log(renderTextAnalysis(analysis, toDisplayPath(absolutePath)));
     process.exit(0);
   }
 

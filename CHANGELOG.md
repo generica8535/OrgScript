@@ -6,6 +6,15 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-03-29
+
+- Introduced `orgscript analyze <file>` for deterministic structural analysis (block counts, metrics, and complexity hints).
+- Added `orgscript export context <file>` to package logic for AI-ready workflows (Bundled model, analysis, and summaries).
+- Published integration recipes for GitHub Actions and pre-commit hooks under `docs/integrations/`.
+- Upgraded documentation site builder to highlight the "Source-to-Docs" flow and unified artifacts.
+- Expanded the showcase with a high-quality "Incident Escalation" trust case.
+- Stabilized CLI output for analysis and context exports.
+
 ## [0.7.0] - 2026-03-29
 
 - Enhanced CLI for professional distribution: added `--version` and improved help text.

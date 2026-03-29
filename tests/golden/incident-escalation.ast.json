@@ -1,0 +1,357 @@
+{
+  "type": "Document",
+  "filePath": "examples/incident-escalation.orgs",
+  "body": [
+    {
+      "type": "StateflowNode",
+      "name": "IncidentLifecycle",
+      "states": [
+        {
+          "type": "StateNode",
+          "value": "open",
+          "line": 4
+        },
+        {
+          "type": "StateNode",
+          "value": "triaged",
+          "line": 5
+        },
+        {
+          "type": "StateNode",
+          "value": "investigating",
+          "line": 6
+        },
+        {
+          "type": "StateNode",
+          "value": "mitigated",
+          "line": 7
+        },
+        {
+          "type": "StateNode",
+          "value": "resolved",
+          "line": 8
+        },
+        {
+          "type": "StateNode",
+          "value": "closed",
+          "line": 9
+        }
+      ],
+      "transitions": [
+        {
+          "type": "TransitionEdgeNode",
+          "from": "open",
+          "to": "triaged",
+          "line": 12
+        },
+        {
+          "type": "TransitionEdgeNode",
+          "from": "triaged",
+          "to": "investigating",
+          "line": 13
+        },
+        {
+          "type": "TransitionEdgeNode",
+          "from": "triaged",
+          "to": "mitigated",
+          "line": 14
+        },
+        {
+          "type": "TransitionEdgeNode",
+          "from": "investigating",
+          "to": "mitigated",
+          "line": 15
+        },
+        {
+          "type": "TransitionEdgeNode",
+          "from": "mitigated",
+          "to": "resolved",
+          "line": 16
+        },
+        {
+          "type": "TransitionEdgeNode",
+          "from": "resolved",
+          "to": "closed",
+          "line": 17
+        }
+      ]
+    },
+    {
+      "type": "RoleNode",
+      "name": "OnCallEngineer",
+      "can": [
+        {
+          "type": "PermissionNode",
+          "value": "triage incident",
+          "line": 22
+        },
+        {
+          "type": "PermissionNode",
+          "value": "assign responder",
+          "line": 23
+        },
+        {
+          "type": "PermissionNode",
+          "value": "update status",
+          "line": 24
+        },
+        {
+          "type": "PermissionNode",
+          "value": "resolve incident",
+          "line": 25
+        }
+      ],
+      "cannot": []
+    },
+    {
+      "type": "RoleNode",
+      "name": "IncidentManager",
+      "can": [
+        {
+          "type": "PermissionNode",
+          "value": "escalate incident",
+          "line": 30
+        },
+        {
+          "type": "PermissionNode",
+          "value": "declare major incident",
+          "line": 31
+        },
+        {
+          "type": "PermissionNode",
+          "value": "notify stakeholders",
+          "line": 32
+        }
+      ],
+      "cannot": []
+    },
+    {
+      "type": "PolicyNode",
+      "name": "EscalationPolicy",
+      "clauses": [
+        {
+          "type": "PolicyClauseNode",
+          "condition": {
+            "type": "LogicalConditionNode",
+            "operator": "and",
+            "conditions": [
+              {
+                "type": "ComparisonConditionNode",
+                "left": {
+                  "type": "FieldReferenceNode",
+                  "path": "incident.severity"
+                },
+                "operator": "=",
+                "right": {
+                  "type": "LiteralNode",
+                  "valueType": "string",
+                  "value": "high"
+                },
+                "line": 36
+              },
+              {
+                "type": "ComparisonConditionNode",
+                "left": {
+                  "type": "FieldReferenceNode",
+                  "path": "incident.status"
+                },
+                "operator": "=",
+                "right": {
+                  "type": "LiteralNode",
+                  "valueType": "string",
+                  "value": "open"
+                },
+                "line": 36
+              }
+            ],
+            "line": 36
+          },
+          "body": [
+            {
+              "type": "RequireNode",
+              "requirement": "triage_sla",
+              "line": 38
+            },
+            {
+              "type": "NotifyNode",
+              "target": "on_call_manager",
+              "message": "SLA Warning: High severity incident untriaged",
+              "line": 39
+            }
+          ],
+          "line": 36
+        },
+        {
+          "type": "PolicyClauseNode",
+          "condition": {
+            "type": "ComparisonConditionNode",
+            "left": {
+              "type": "FieldReferenceNode",
+              "path": "incident.status"
+            },
+            "operator": "=",
+            "right": {
+              "type": "LiteralNode",
+              "valueType": "string",
+              "value": "investigating"
+            },
+            "line": 41
+          },
+          "body": [
+            {
+              "type": "RequireNode",
+              "requirement": "regular_status_updates",
+              "line": 43
+            }
+          ],
+          "line": 41
+        }
+      ]
+    },
+    {
+      "type": "ProcessNode",
+      "name": "IncidentHandling",
+      "body": [
+        {
+          "type": "WhenNode",
+          "trigger": {
+            "type": "FieldReferenceNode",
+            "path": "system.alert_received"
+          },
+          "line": 47
+        },
+        {
+          "type": "CreateNode",
+          "entity": "incident",
+          "line": 49
+        },
+        {
+          "type": "AssignNode",
+          "target": {
+            "type": "FieldReferenceNode",
+            "path": "incident.severity"
+          },
+          "value": {
+            "type": "LiteralNode",
+            "valueType": "string",
+            "value": "medium"
+          },
+          "line": 50
+        },
+        {
+          "type": "TransitionNode",
+          "target": {
+            "type": "FieldReferenceNode",
+            "path": "incident.status"
+          },
+          "value": {
+            "type": "LiteralNode",
+            "valueType": "string",
+            "value": "open"
+          },
+          "line": 51
+        },
+        {
+          "type": "IfNode",
+          "condition": {
+            "type": "ComparisonConditionNode",
+            "left": {
+              "type": "FieldReferenceNode",
+              "path": "alert.source"
+            },
+            "operator": "=",
+            "right": {
+              "type": "LiteralNode",
+              "valueType": "string",
+              "value": "critical_infrastructure"
+            },
+            "line": 53
+          },
+          "then": [
+            {
+              "type": "AssignNode",
+              "target": {
+                "type": "FieldReferenceNode",
+                "path": "incident.severity"
+              },
+              "value": {
+                "type": "LiteralNode",
+                "valueType": "string",
+                "value": "high"
+              },
+              "line": 54
+            },
+            {
+              "type": "NotifyNode",
+              "target": "on_call_team",
+              "message": "Critical alert detected",
+              "line": 55
+            }
+          ],
+          "elseIf": [],
+          "else": null,
+          "line": 53
+        },
+        {
+          "type": "IfNode",
+          "condition": {
+            "type": "ComparisonConditionNode",
+            "left": {
+              "type": "FieldReferenceNode",
+              "path": "incident.status"
+            },
+            "operator": "=",
+            "right": {
+              "type": "LiteralNode",
+              "valueType": "string",
+              "value": "triaged"
+            },
+            "line": 57
+          },
+          "then": [
+            {
+              "type": "AssignNode",
+              "target": {
+                "type": "FieldReferenceNode",
+                "path": "incident.primary_responder"
+              },
+              "value": {
+                "type": "LiteralNode",
+                "valueType": "string",
+                "value": "on_call_engineer"
+              },
+              "line": 58
+            },
+            {
+              "type": "TransitionNode",
+              "target": {
+                "type": "FieldReferenceNode",
+                "path": "incident.status"
+              },
+              "value": {
+                "type": "LiteralNode",
+                "valueType": "string",
+                "value": "investigating"
+              },
+              "line": 59
+            }
+          ],
+          "elseIf": [],
+          "else": {
+            "type": "ElseNode",
+            "body": [
+              {
+                "type": "NotifyNode",
+                "target": "incident_manager",
+                "message": "Incident requiring triage",
+                "line": 62
+              }
+            ],
+            "line": 61
+          },
+          "line": 57
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,237 @@
+{
+  "version": "0.2",
+  "type": "document",
+  "body": [
+    {
+      "type": "stateflow",
+      "name": "IncidentLifecycle",
+      "states": [
+        "open",
+        "triaged",
+        "investigating",
+        "mitigated",
+        "resolved",
+        "closed"
+      ],
+      "transitions": [
+        {
+          "from": "open",
+          "to": "triaged"
+        },
+        {
+          "from": "triaged",
+          "to": "investigating"
+        },
+        {
+          "from": "triaged",
+          "to": "mitigated"
+        },
+        {
+          "from": "investigating",
+          "to": "mitigated"
+        },
+        {
+          "from": "mitigated",
+          "to": "resolved"
+        },
+        {
+          "from": "resolved",
+          "to": "closed"
+        }
+      ]
+    },
+    {
+      "type": "role",
+      "name": "OnCallEngineer",
+      "can": [
+        "triage incident",
+        "assign responder",
+        "update status",
+        "resolve incident"
+      ],
+      "cannot": []
+    },
+    {
+      "type": "role",
+      "name": "IncidentManager",
+      "can": [
+        "escalate incident",
+        "declare major incident",
+        "notify stakeholders"
+      ],
+      "cannot": []
+    },
+    {
+      "type": "policy",
+      "name": "EscalationPolicy",
+      "clauses": [
+        {
+          "condition": {
+            "type": "logical",
+            "operator": "and",
+            "conditions": [
+              {
+                "type": "comparison",
+                "left": {
+                  "type": "field",
+                  "path": "incident.severity"
+                },
+                "operator": "=",
+                "right": {
+                  "type": "string",
+                  "value": "high"
+                }
+              },
+              {
+                "type": "comparison",
+                "left": {
+                  "type": "field",
+                  "path": "incident.status"
+                },
+                "operator": "=",
+                "right": {
+                  "type": "string",
+                  "value": "open"
+                }
+              }
+            ]
+          },
+          "then": [
+            {
+              "type": "require",
+              "requirement": "triage_sla"
+            },
+            {
+              "type": "notify",
+              "target": "on_call_manager",
+              "message": "SLA Warning: High severity incident untriaged"
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": "comparison",
+            "left": {
+              "type": "field",
+              "path": "incident.status"
+            },
+            "operator": "=",
+            "right": {
+              "type": "string",
+              "value": "investigating"
+            }
+          },
+          "then": [
+            {
+              "type": "require",
+              "requirement": "regular_status_updates"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "process",
+      "name": "IncidentHandling",
+      "body": [
+        {
+          "type": "when",
+          "trigger": "system.alert_received"
+        },
+        {
+          "type": "create",
+          "entity": "incident"
+        },
+        {
+          "type": "assign",
+          "target": "incident.severity",
+          "value": {
+            "type": "string",
+            "value": "medium"
+          }
+        },
+        {
+          "type": "transition",
+          "target": "incident.status",
+          "value": {
+            "type": "string",
+            "value": "open"
+          }
+        },
+        {
+          "type": "if",
+          "condition": {
+            "type": "comparison",
+            "left": {
+              "type": "field",
+              "path": "alert.source"
+            },
+            "operator": "=",
+            "right": {
+              "type": "string",
+              "value": "critical_infrastructure"
+            }
+          },
+          "then": [
+            {
+              "type": "assign",
+              "target": "incident.severity",
+              "value": {
+                "type": "string",
+                "value": "high"
+              }
+            },
+            {
+              "type": "notify",
+              "target": "on_call_team",
+              "message": "Critical alert detected"
+            }
+          ],
+          "elseIf": [],
+          "else": null
+        },
+        {
+          "type": "if",
+          "condition": {
+            "type": "comparison",
+            "left": {
+              "type": "field",
+              "path": "incident.status"
+            },
+            "operator": "=",
+            "right": {
+              "type": "string",
+              "value": "triaged"
+            }
+          },
+          "then": [
+            {
+              "type": "assign",
+              "target": "incident.primary_responder",
+              "value": {
+                "type": "string",
+                "value": "on_call_engineer"
+              }
+            },
+            {
+              "type": "transition",
+              "target": "incident.status",
+              "value": {
+                "type": "string",
+                "value": "investigating"
+              }
+            }
+          ],
+          "elseIf": [],
+          "else": [
+            {
+              "type": "notify",
+              "target": "incident_manager",
+              "message": "Incident requiring triage"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
