@@ -6,6 +6,8 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-03-29
+
 - Added the first AST-backed formatter via `orgscript format <file>`.
 - Added formatter stability tests to ensure canonical example files remain idempotent.
 - Added the first AST-backed linter via `orgscript lint <file>`.
