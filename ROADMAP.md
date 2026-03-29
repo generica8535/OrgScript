@@ -29,15 +29,18 @@
 - Generate diagrams and documentation from the model
 - Add localization architecture for keyword packs
 
+## v0.4
+
+- Add `format --check` for CI and pre-commit workflows
+- Document real JSON diagnostics examples in README and diagnostics spec
+- Add `orgscript check` as a combined quality command
+- Improve consistency of human-readable CLI diagnostics
+- Add an initial VS Code syntax highlighting scaffold
+
 ## Unreleased
 
-- Add first AST-backed formatter command
-- Enforce formatter stability through parser/formatter roundtrip tests
-- Add first AST-backed linter command
-- Add lint fixtures for suspicious but syntactically valid models
-- Formalize lint severities and stable lint output ordering
-- Add machine-readable diagnostics for validate and lint
-- Add CI workflows for tests, validation, and example linting
+- Open the v0.4.0 developer-experience milestone
+- Prepare issue drafts for formatter checks, diagnostics docs, combined quality checks, diagnostics consistency, and editor support
 
 ## Later
 

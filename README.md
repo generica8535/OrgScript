@@ -117,8 +117,11 @@ See the full example in [`examples/craft-business-lead-to-order.orgs`](examples/
 - [`docs/ast-v0.2.md`](docs/ast-v0.2.md)
 - [`docs/cli-v0.1-plan.md`](docs/cli-v0.1-plan.md)
 - [`docs/language-principles.md`](docs/language-principles.md)
+- [`docs/github-labels.md`](docs/github-labels.md)
+- [`docs/github-project-setup.md`](docs/github-project-setup.md)
 - [`docs/orgscript-for-humans.md`](docs/orgscript-for-humans.md)
 - [`docs/orgscript-for-ai.md`](docs/orgscript-for-ai.md)
+- [`docs/roadmaps/v0.4.0.md`](docs/roadmaps/v0.4.0.md)
 - [`docs/repository-structure.md`](docs/repository-structure.md)
 - [`docs/syntax.md`](docs/syntax.md)
 - [`docs/semantics.md`](docs/semantics.md)
@@ -171,11 +174,13 @@ Exit codes are CI-friendly:
 
 ## Near-term plan
 
-1. Build a parser that validates `.orgs` files.
-2. Emit a canonical AST for downstream tooling.
-3. Add a formatter for deterministic file layout.
-4. Add a linter for operational modeling mistakes.
-5. Expand the examples with real-world business cases.
+1. Add `format --check` for CI and pre-commit workflows.
+2. Show real JSON diagnostics examples in the README and diagnostics spec.
+3. Add `orgscript check` as a combined quality command.
+4. Improve diagnostics consistency across CLI commands.
+5. Add an initial VS Code syntax highlighting scaffold.
+
+See [`docs/roadmaps/v0.4.0.md`](docs/roadmaps/v0.4.0.md) for the current milestone plan.
 
 ## CLI
 
