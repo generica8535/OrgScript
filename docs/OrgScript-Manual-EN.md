@@ -37,4 +37,4 @@ OrgScript provides a powerful CLI tool (`orgscript`):
 - **Version Control**: Store your business logic in Git to track changes and collaborate through pull requests.
 
 ---
-*Version 0.8.0 / OrgScript Foundation*
+*Version 0.9.0-rc1 / OrgScript Release Candidate*

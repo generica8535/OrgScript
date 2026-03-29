@@ -37,4 +37,4 @@ OrgScript bietet ein mächtiges CLI-Werkzeug (`orgscript`):
 - **Git verwenden**: Versioniere deine Logik wie Code.
 
 ---
-*Version 0.8.0 / OrgScript Foundation*
+*Version 0.9.0-rc1 / OrgScript Release Candidate*

@@ -6,6 +6,15 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 ## [Unreleased]
 
+## [0.9.0-rc1] - 2026-03-29
+
+- Prepared OrgScript for public distribution as a release candidate with npm/package metadata aligned to `0.9.0-rc1`.
+- Added `src/index.js` as a cleaner package entry point for library-style consumption.
+- Hardened repository metadata for GitHub, npm, and marketplace-facing usage.
+- Prepared the VS Code extension package for external distribution and aligned its metadata with the release candidate.
+- Added and polished GitHub Pages-style documentation site artifacts and publishing workflow support.
+- Added DE/EN handbook-style manuals and completed missing Mermaid demo artifacts in the showcase flow.
+
 ## [0.8.0] - 2026-03-29
 
 - Introduced `orgscript analyze <file>` for deterministic structural analysis (block counts, metrics, and complexity hints).
