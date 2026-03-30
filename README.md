@@ -25,7 +25,15 @@ OrgScript is designed for operators, team leads, analysts, and engineers who nee
 
 OrgScript requires Node.js `>=18`.
 
-The CLI is not currently published on npm under `orgscript`, so use one of the repository-based installation paths below.
+The published npm package is scoped as `@dkfuh/orgscript`.
+
+### Global install from npm
+
+```bash
+npm install -g @dkfuh/orgscript
+```
+
+That installs the CLI command as `orgscript`.
 
 ### Local repository setup
 

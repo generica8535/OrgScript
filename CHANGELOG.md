@@ -6,6 +6,12 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 ## [Unreleased]
 
+## [0.9.3] - 2026-03-30
+
+- Renamed the npm package to `@dkfuh/orgscript` after npm rejected the unscoped `orgscript` name as too similar to an existing package.
+- Updated installation guidance to use `npm install -g @dkfuh/orgscript` while keeping the CLI command name `orgscript`.
+- Re-verified package and publish readiness for the scoped public npm path.
+
 ## [0.9.2] - 2026-03-30
 
 - Normalized npm publish metadata so `bin.orgscript` and `repository.url` no longer require npm auto-correction during publish.
