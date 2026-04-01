@@ -203,16 +203,27 @@
     "operators": {
       "patterns": [
         {
-          "match": "(!=|<=|>=|->|=|<|>)",
-          "name": "keyword.operator.orgscript"
+          "match": "->",
+          "name": "keyword.operator.arrow.orgscript"
+        },
+        {
+          "match": "(!=|<=|>=|=|<|>)",
+          "name": "keyword.operator.comparison.orgscript"
         }
       ]
     },
     "references": {
       "patterns": [
         {
-          "match": "\\b[A-Za-z_][A-Za-z0-9_-]*(?:\\.[A-Za-z_][A-Za-z0-9_-]*)+\\b",
-          "name": "variable.other.property.orgscript"
+          "match": "\\b([A-Za-z_][A-Za-z0-9_-]*)((?:\\.[A-Za-z_][A-Za-z0-9_-]*)+)\\b",
+          "captures": {
+            "1": {
+              "name": "variable.other.object.orgscript"
+            },
+            "2": {
+              "name": "variable.other.property.orgscript"
+            }
+          }
         }
       ]
     }
