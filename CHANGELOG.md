@@ -6,6 +6,13 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 ## [Unreleased]
 
+## [0.9.5] - 2026-04-01
+
+- Clarified exporter trust and maturity across README, manuals, and AI guidance.
+- Added exporter maturity matrix and trust-level notes to steer tooling expectations.
+- Documented security posture in SECURITY.md and summarized it in the README.
+- Tightened CLI help to point at exporter maturity without overloading the interface.
+
 ## [0.9.4] - 2026-03-31
 
 - Added an optional document language metadata header with `orgscript 1` plus `source-language`, `comment-language`, `annotation-language`, and `context-language`.
