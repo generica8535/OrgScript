@@ -6,7 +6,9 @@ const { toMermaidMarkdown } = require("./export-mermaid");
 const { toHtmlDocumentation } = require("./export-html");
 const { toBpmnXml } = require("./export-bpmn");
 const { toGraphJson } = require("./export-graph");
+const { toPlantuml } = require("./export-plantuml");
 const { toLittleHorseSkeleton } = require("./export-littlehorse");
+const { toContractJson } = require("./export-contract");
 const { toGraphJson } = require("./export-graph");
 const { analyzeDocument } = require("./analyze");
 const { toAiContext } = require("./export-context");
@@ -30,7 +32,9 @@ module.exports = {
   toHtmlDocumentation,
   toBpmnXml,
   toGraphJson,
+  toPlantuml,
   toLittleHorseSkeleton,
+  toContractJson,
   toGraphJson,
   toAiContext,
 };

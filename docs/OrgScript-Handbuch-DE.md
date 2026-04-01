@@ -71,6 +71,8 @@ orgscript export context ./examples/lead-qualification.orgs
 orgscript export bpmn ./examples/lead-qualification.orgs
 orgscript export littlehorse ./examples/lead-qualification.orgs
 orgscript export graph ./examples/lead-qualification.orgs
+orgscript export plantuml ./examples/lead-qualification.orgs
+orgscript export contract ./examples/lead-qualification.orgs
 orgscript export graph ./examples/lead-qualification.orgs
 ```
 
@@ -83,6 +85,8 @@ Was sie tun:
 - `export bpmn` erzeugt ein BPMN-XML-Skelett fuer Prozessbloecke
 - `export littlehorse` erzeugt ein LittleHorse-Workflow-Skelett (Pseudo-Code)
 - `export graph` erzeugt ein kompaktes Graph-JSON (Nodes + Edges)
+- `export plantuml` erzeugt PlantUML-Skelette fuer Prozesse und Stateflows
+- `export contract` erzeugt ein OpenAPI-aehnliches Prozess-Contract-JSON
 - `export graph` erzeugt ein kompaktes Knoten-und-Kanten-JSON
 
 ## Kommentare und Annotationen
@@ -169,6 +173,7 @@ Standardverhalten der Exporter:
 - Annotationen erscheinen in Markdown und HTML nur mit `--with-annotations`
 - BPMN- und LittleHorse-Exporter sind Skelette und brauchen manuelle Nacharbeit
 - Graph-JSON-Export ist ein kompaktes Integrationsartefakt fuer Tooling und Visualisierung
+- PlantUML- und Contract-Exporter sind leichte Skelette fuer Kommunikation und Tooling
 - Graph-Export ist eine kompakte Strukturansicht, kein semantischer Ersatz fuer das kanonische Modell
 
 So bleibt Geschaeftslogik explizit und Kommentare werden keine versteckte zweite Sprache.

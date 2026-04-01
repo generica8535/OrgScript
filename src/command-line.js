@@ -18,7 +18,9 @@ const { toMermaidMarkdown } = require("./export-mermaid");
 const { toHtmlDocumentation } = require("./export-html");
 const { toBpmnXml } = require("./export-bpmn");
 const { toGraphJson } = require("./export-graph");
+const { toPlantuml } = require("./export-plantuml");
 const { toLittleHorseSkeleton } = require("./export-littlehorse");
+const { toContractJson } = require("./export-contract");
 const { formatDocument } = require("./formatter");
 const { lintDocument, summarizeFindings } = require("./linter");
 const { buildModel, validateFile } = require("./validate");
@@ -158,7 +160,9 @@ Targets:
   html            Self-contained documentation page
   bpmn            BPMN XML skeleton
   graph           Graph JSON (nodes + edges)
+  plantuml        PlantUML skeletons (process + stateflow)
   littlehorse     LittleHorse workflow skeleton (pseudo-code)
+  contract        OpenAPI-style process contract (metadata)
 
 Options:
   --with-annotations  Include annotations and document metadata in supported Markdown and HTML exports
@@ -251,11 +255,31 @@ ${docs}`);
     return;
   }
 
+  if (target === "plantuml") {
+    console.log(`orgscript export plantuml
+
+Usage:
+  orgscript export plantuml <file>
+
+${docs}`);
+    return;
+  }
+
   if (target === "littlehorse") {
     console.log(`orgscript export littlehorse
 
 Usage:
   orgscript export littlehorse <file>
+
+${docs}`);
+    return;
+  }
+
+  if (target === "contract") {
+    console.log(`orgscript export contract
+
+Usage:
+  orgscript export contract <file>
 
 ${docs}`);
     return;
@@ -499,6 +523,27 @@ function run(args) {
     }
   }
 
+  if (command === "export" && maybeSubcommand === "plantuml") {
+    const absolutePath = resolveFile("export", maybeFile);
+    const result = buildModel(absolutePath);
+
+    if (!result.ok) {
+      printDiagnostics(
+        `EXPORT ${toDisplayPath(absolutePath)}`,
+        createValidateReport(absolutePath, result).diagnostics
+      );
+      process.exit(1);
+    }
+
+    try {
+      process.stdout.write(toPlantuml(toCanonicalModel(result.ast)));
+      process.exit(0);
+    } catch (error) {
+      console.error(`Cannot export PlantUML from ${absolutePath}: ${error.message}`);
+      process.exit(1);
+    }
+  }
+
   if (command === "export" && maybeSubcommand === "littlehorse") {
     const absolutePath = resolveFile("export", maybeFile);
     const result = buildModel(absolutePath);
@@ -516,6 +561,27 @@ function run(args) {
       process.exit(0);
     } catch (error) {
       console.error(`Cannot export LittleHorse from ${absolutePath}: ${error.message}`);
+      process.exit(1);
+    }
+  }
+
+  if (command === "export" && maybeSubcommand === "contract") {
+    const absolutePath = resolveFile("export", maybeFile);
+    const result = buildModel(absolutePath);
+
+    if (!result.ok) {
+      printDiagnostics(
+        `EXPORT ${toDisplayPath(absolutePath)}`,
+        createValidateReport(absolutePath, result).diagnostics
+      );
+      process.exit(1);
+    }
+
+    try {
+      process.stdout.write(toContractJson(toCanonicalModel(result.ast)));
+      process.exit(0);
+    } catch (error) {
+      console.error(`Cannot export contract from ${absolutePath}: ${error.message}`);
       process.exit(1);
     }
   }

@@ -12,7 +12,9 @@ const { toMermaidMarkdown } = require("../src/export-mermaid");
 const { toHtmlDocumentation } = require("../src/export-html");
 const { toBpmnXml } = require("../src/export-bpmn");
 const { toGraphJson } = require("../src/export-graph");
+const { toPlantuml } = require("../src/export-plantuml");
 const { toLittleHorseSkeleton } = require("../src/export-littlehorse");
+const { toContractJson } = require("../src/export-contract");
 const { toAiContext } = require("../src/export-context");
 const { analyzeDocument } = require("../src/analyze");
 const { lintDocument, renderLintReport, summarizeFindings } = require("../src/linter");
@@ -459,6 +461,29 @@ function testCliDiagnosticsAndExitCodes() {
   assert.ok(Array.isArray(exportGraphPayload.nodes));
   assert.ok(Array.isArray(exportGraphPayload.edges));
 
+  const exportPlantuml = runCli([
+    cliPath,
+    "export",
+    "plantuml",
+    "./examples/craft-business-lead-to-order.orgs",
+  ]);
+  assert.strictEqual(exportPlantuml.status, 0, "Expected export plantuml to succeed");
+  assert.ok(
+    exportPlantuml.stdout.includes("@startuml"),
+    "Expected PlantUML export to include startuml"
+  );
+
+  const exportContract = runCli([
+    cliPath,
+    "export",
+    "contract",
+    "./examples/craft-business-lead-to-order.orgs",
+  ]);
+  assert.strictEqual(exportContract.status, 0, "Expected export contract to succeed");
+  const exportContractPayload = JSON.parse(exportContract.stdout);
+  assert.strictEqual(exportContractPayload.type, "contract");
+  assert.ok(Array.isArray(exportContractPayload.processes));
+
   const exportContext = runCli([
     cliPath,
     "export",
@@ -576,6 +601,38 @@ function testCliDiagnosticsAndExitCodes() {
   assert.ok(
     exportGraphUnsupported.stderr.includes("No graph-exportable blocks found"),
     "Expected unsupported graph export reason"
+  );
+
+  const exportPlantumlUnsupported = runCli([
+    cliPath,
+    "export",
+    "plantuml",
+    "./examples/service-escalation.orgs",
+  ]);
+  assert.strictEqual(
+    exportPlantumlUnsupported.status,
+    1,
+    "Expected export plantuml to fail when no supported blocks exist"
+  );
+  assert.ok(
+    exportPlantumlUnsupported.stderr.includes("No PlantUML-exportable blocks found"),
+    "Expected unsupported PlantUML export reason"
+  );
+
+  const exportContractUnsupported = runCli([
+    cliPath,
+    "export",
+    "contract",
+    "./examples/service-escalation.orgs",
+  ]);
+  assert.strictEqual(
+    exportContractUnsupported.status,
+    1,
+    "Expected export contract to fail when no supported blocks exist"
+  );
+  assert.ok(
+    exportContractUnsupported.stderr.includes("No contract-exportable blocks found"),
+    "Expected unsupported contract export reason"
   );
 
   const formatCommand = runCli([
@@ -944,6 +1001,13 @@ function testSkeletonExporters() {
   assert.strictEqual(graph.type, "graph");
   assert.ok(graph.nodes.length > 0, "Expected graph nodes");
   assert.ok(graph.edges.length > 0, "Expected graph edges");
+
+  const plantuml = toPlantuml(model);
+  assert.ok(plantuml.includes("@startuml"), "Expected PlantUML output");
+
+  const contract = JSON.parse(toContractJson(model));
+  assert.strictEqual(contract.type, "contract");
+  assert.ok(contract.processes.length > 0, "Expected contract processes");
 }
 
 function testCommentsAndAnnotations() {
