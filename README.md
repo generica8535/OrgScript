@@ -223,6 +223,7 @@ orgscript export mermaid <file>
 orgscript export html <file>
 orgscript export bpmn <file>
 orgscript export littlehorse <file>
+orgscript export littlehorse <file> --littlehorse-real
 orgscript export graph <file>
 orgscript export plantuml <file>
 orgscript export contract <file>

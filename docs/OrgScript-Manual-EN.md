@@ -70,6 +70,7 @@ orgscript export markdown ./examples/lead-qualification.orgs --with-annotations
 orgscript export context ./examples/lead-qualification.orgs
 orgscript export bpmn ./examples/lead-qualification.orgs
 orgscript export littlehorse ./examples/lead-qualification.orgs
+orgscript export littlehorse ./examples/lead-qualification.orgs --littlehorse-real
 orgscript export graph ./examples/lead-qualification.orgs
 orgscript export plantuml ./examples/lead-qualification.orgs
 orgscript export contract ./examples/lead-qualification.orgs
@@ -83,6 +84,7 @@ What they do:
 - `export context` creates a structured AI/tooling context bundle
 - `export bpmn` creates a BPMN XML skeleton for process blocks
 - `export littlehorse` creates a LittleHorse workflow skeleton (pseudo-code scaffold)
+- `export littlehorse --littlehorse-real` emits a comment-free scaffold with executable stubs only
 - `export graph` creates a minimal graph JSON (nodes + edges)
 - `export plantuml` creates PlantUML skeletons for processes and stateflows
 - `export contract` creates an OpenAPI-style process contract JSON
