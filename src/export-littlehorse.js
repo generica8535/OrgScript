@@ -1,38 +1,54 @@
-function toLittleHorseSkeleton(model) {
+function toLittleHorseSkeleton(model, options = {}) {
+  const realCode = options.realCode === true;
   const processes = (model.body || []).filter((node) => node.type === "process");
 
   if (processes.length === 0) {
     throw new Error("No LittleHorse-exportable blocks found. Supported block types: process.");
   }
 
-  const lines = [
-    "// OrgScript -> LittleHorse workflow skeleton",
-    "// This is a scaffold. Translate it to your LittleHorse SDK and task definitions.",
-    "",
-  ];
+  const lines = [];
+  if (!realCode) {
+    lines.push(
+      "// OrgScript -> LittleHorse workflow skeleton",
+      "// This is a scaffold. Translate it to your LittleHorse SDK and task definitions.",
+      ""
+    );
+  }
 
   processes.forEach((processNode) => {
     const className = sanitizeClassName(processNode.name);
     const workflowName = toKebabName(processNode.name);
     lines.push(`public final class ${className}Workflow {`);
-    lines.push("  // TODO: adapt this skeleton to your LittleHorse SDK version.");
+    if (!realCode) {
+      lines.push("  // TODO: adapt this skeleton to your LittleHorse SDK version.");
+    }
     lines.push("  public static Workflow getWorkflow() {");
     lines.push(`    return new WorkflowImpl("${workflowName}", wf -> {`);
-    lines.push(`      // Process: ${processNode.name}`);
+    if (!realCode) {
+      lines.push(`      // Process: ${processNode.name}`);
+    }
     const declarations = renderDeclarations(processNode.body || [], 6);
     if (declarations.length > 0) {
-      lines.push("      // TODO: declare variables and task definitions");
+      if (!realCode) {
+        lines.push("      // TODO: declare variables and task definitions");
+      }
       lines.push(...declarations);
-      lines.push("");
+      if (!realCode) {
+        lines.push("");
+      }
     } else {
-      lines.push("      // TODO: declare variables and task definitions");
+      if (!realCode) {
+        lines.push("      // TODO: declare variables and task definitions");
+      }
     }
 
-    const bodyLines = renderStatements(processNode.body || [], 6);
+    const bodyLines = renderStatements(processNode.body || [], 6, { realCode });
     if (bodyLines.length > 0) {
       lines.push(...bodyLines);
     } else {
-      lines.push("      // TODO: add workflow steps");
+      if (!realCode) {
+        lines.push("      // TODO: add workflow steps");
+      }
     }
 
     lines.push("    });");
@@ -172,56 +188,65 @@ function renderDeclaration(entry) {
   return `var ${variableName} = wf.declare${typeSuffix}("${variableName}");`;
 }
 
-function renderStatements(statements, indentSize) {
+function renderStatements(statements, indentSize, options = {}) {
   const lines = [];
   const indent = " ".repeat(indentSize);
+  const realCode = options.realCode === true;
 
   for (const statement of statements) {
     if (statement.type === "when") {
-      lines.push(`${indent}// when ${statement.trigger || "unknown"}`);
+      if (!realCode) {
+        lines.push(`${indent}// when ${statement.trigger || "unknown"}`);
+      }
       continue;
     }
 
     if (statement.type === "if") {
       lines.push(`${indent}wf.doIf(/* ${formatCondition(statement.condition)} */, ifBody -> {`);
-      lines.push(...renderStatements(statement.then || [], indentSize + 2));
+      lines.push(...renderStatements(statement.then || [], indentSize + 2, options));
       lines.push(`${indent}})`);
 
       const elseIfBranches = statement.elseIf || [];
       for (const branch of elseIfBranches) {
         lines.push(`${indent}.doElseIf(/* ${formatCondition(branch.condition)} */, elseIfBody -> {`);
-        lines.push(...renderStatements(branch.then || [], indentSize + 2));
+        lines.push(...renderStatements(branch.then || [], indentSize + 2, options));
         lines.push(`${indent}})`);
       }
 
       if (statement.else && (statement.else.body || []).length > 0) {
         lines.push(`${indent}.doElse(elseBody -> {`);
-        lines.push(...renderStatements(statement.else.body || [], indentSize + 2));
+        lines.push(...renderStatements(statement.else.body || [], indentSize + 2, options));
         lines.push(`${indent}});`);
       } else {
-        lines.push(`${indent};`);
+        const lastIndex = lines.length - 1;
+        lines[lastIndex] = `${lines[lastIndex]};`;
       }
       continue;
     }
 
     if (statement.type === "stop") {
-      lines.push(`${indent}// stop`);
+      if (!realCode) {
+        lines.push(`${indent}// stop`);
+      }
       continue;
     }
 
-    const action = formatAction(statement);
-    if (action) {
+    const action = formatAction(statement, { realCode });
+    if (action && (!realCode || !action.startsWith("//"))) {
       lines.push(`${indent}${action}`);
       continue;
     }
 
-    lines.push(`${indent}// ${statement.type}`);
+    if (!realCode) {
+      lines.push(`${indent}// ${statement.type}`);
+    }
   }
 
   return lines;
 }
 
-function formatAction(statement) {
+function formatAction(statement, options = {}) {
+  const realCode = options.realCode === true;
   if (statement.type === "assign") {
     return `// assign ${statement.target || "?"} = ${formatExpression(statement.value)}`;
   }
@@ -250,6 +275,9 @@ function formatAction(statement) {
     return `wf.execute("require", "${requirement}");`;
   }
 
+  if (!realCode) {
+    return `// ${statement.type}`;
+  }
   return null;
 }
 

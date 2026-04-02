@@ -166,6 +166,7 @@ Targets:
 
 Options:
   --with-annotations  Include annotations and document metadata in supported Markdown and HTML exports
+  --littlehorse-real  Emit a LittleHorse scaffold without comment-only lines
   -h, --help          Show this help
 
 Note:
@@ -272,7 +273,7 @@ ${docs}`);
     console.log(`orgscript export littlehorse
 
 Usage:
-  orgscript export littlehorse <file>
+  orgscript export littlehorse <file> [--littlehorse-real]
 
 ${docs}`);
     return;
@@ -560,7 +561,11 @@ function run(args) {
     }
 
     try {
-      process.stdout.write(toLittleHorseSkeleton(toCanonicalModel(result.ast)));
+      process.stdout.write(
+        toLittleHorseSkeleton(toCanonicalModel(result.ast), {
+          realCode: options.littlehorseReal,
+        })
+      );
       process.exit(0);
     } catch (error) {
       console.error(`Cannot export LittleHorse from ${absolutePath}: ${error.message}`);
@@ -783,6 +788,7 @@ function parseArgs(args) {
     check: false,
     json: false,
     withAnnotations: false,
+    littlehorseReal: false,
     help: false,
     version: false,
     positionals: [],
@@ -811,6 +817,11 @@ function parseArgs(args) {
 
     if (argument === "--with-annotations") {
       options.withAnnotations = true;
+      continue;
+    }
+
+    if (argument === "--littlehorse-real") {
+      options.littlehorseReal = true;
       continue;
     }
 

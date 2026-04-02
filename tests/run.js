@@ -449,6 +449,27 @@ function testCliDiagnosticsAndExitCodes() {
     "Expected LittleHorse skeleton header"
   );
 
+  const exportLittleHorseReal = runCli([
+    cliPath,
+    "export",
+    "littlehorse",
+    "./examples/craft-business-lead-to-order.orgs",
+    "--littlehorse-real",
+  ]);
+  assert.strictEqual(
+    exportLittleHorseReal.status,
+    0,
+    "Expected export littlehorse --littlehorse-real to succeed"
+  );
+  assert.ok(
+    exportLittleHorseReal.stdout.includes("WorkflowImpl(\"craft-business-lead-to-order\""),
+    "Expected LittleHorse real scaffold workflow name"
+  );
+  assert.ok(
+    !exportLittleHorseReal.stdout.includes("OrgScript -> LittleHorse workflow skeleton"),
+    "Expected real scaffold to omit header comments"
+  );
+
   const exportGraph = runCli([
     cliPath,
     "export",
