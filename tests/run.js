@@ -995,6 +995,7 @@ function testSkeletonExporters() {
 
   const littleHorse = toLittleHorseSkeleton(model);
   assert.ok(littleHorse.includes("OrderApprovalWorkflow"), "Expected LittleHorse class name");
+  assert.ok(littleHorse.includes("WorkflowImpl(\"order-approval\""), "Expected workflow name");
   assert.ok(littleHorse.includes("when order.submitted"), "Expected trigger comment");
 
   const graph = JSON.parse(toGraphJson(model));
