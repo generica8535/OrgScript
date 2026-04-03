@@ -6,6 +6,14 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 ## [Unreleased]
 
+## [0.9.6] - 2026-04-03
+
+- Improved the LittleHorse exporter with a real workflow constructor scaffold and kebab-case workflow names.
+- Added real-code mode (`--littlehorse-real`) that emits stub-only output without comment-only lines.
+- Mapped `if / else if / else` to explicit LittleHorse chaining and added variable declaration stubs.
+- Polished VS Code TextMate scopes for operators and dotted references, plus added local testing guidance.
+- Expanded exporter trust guidance in the AI guide and tightened CLI help notes.
+
 ## [0.9.5] - 2026-04-01
 
 - Added new export targets: BPMN skeleton, PlantUML skeleton, LittleHorse scaffold, Graph JSON, and Contract JSON.
